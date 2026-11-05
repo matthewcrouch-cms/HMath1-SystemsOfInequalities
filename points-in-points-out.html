@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Points In, Points Out | Systems of Inequalities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+:root{
+  --page:#EAF2F9; --surface:#FFFFFF; --ink:#13294B; --muted:#4A5D78; --line:#C9D8E8;
+  --carolina:#4B9CD3; --orange:#F56600; --btn:#C75300; --btn-ink:#FFFFFF;
+  --in:#1E8A4C; --out:#C8102E; --halo:#13294B;
+  --grid-minor:#E3ECF5; --grid-major:#C3D5E8; --axis:#13294B;
+  --region:rgba(75,156,211,.40);
+  --row1:#F56600; --row2:#6A3FB5; --row3:#0E7C7B;
+  --ok-bg:#E3F3EA; --bad-bg:#FCEBEE; --info-bg:#FFF1E6;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+    --carolina:#5BAEE6; --orange:#FF7A1F; --btn:#E36A12; --btn-ink:#FFFFFF;
+    --in:#3CC476; --out:#FF5C70; --halo:#E6EEF8;
+    --grid-minor:#1C2E46; --grid-major:#2B4565; --axis:#DCE7F5;
+    --region:rgba(91,174,230,.42);
+    --row1:#FF8A3D; --row2:#B793F5; --row3:#3CC9C7;
+    --ok-bg:#16382A; --bad-bg:#3C1C25; --info-bg:#3A2716;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+  --carolina:#5BAEE6; --orange:#FF7A1F; --btn:#E36A12; --btn-ink:#FFFFFF;
+  --in:#3CC476; --out:#FF5C70; --halo:#E6EEF8;
+  --grid-minor:#1C2E46; --grid-major:#2B4565; --axis:#DCE7F5;
+  --region:rgba(91,174,230,.42);
+  --row1:#FF8A3D; --row2:#B793F5; --row3:#3CC9C7;
+  --ok-bg:#16382A; --bad-bg:#3C1C25; --info-bg:#3A2716;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:17px;line-height:1.5}
+.wrap{max-width:1140px;margin:0 auto;padding:22px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 28px;margin-bottom:20px}
+h1{font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1.08;margin:0;letter-spacing:-.01em}
+.sub{margin:6px 0 0;color:var(--muted)}
+.levels{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.levels button{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--surface);
+  color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s}
+.levels button.solved{background:var(--carolina);border-color:var(--carolina);color:#fff}
+.levels button[aria-current="true"]{box-shadow:0 0 0 3px var(--page),0 0 0 5px var(--orange)}
+main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,1fr);gap:28px;align-items:start}
+@media (max-width:840px){main{grid-template-columns:1fr}}
+.board{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px}
+canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:8px}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.95rem;color:var(--muted);padding:10px 6px 2px;align-items:center}
+.legend svg{vertical-align:-4px;margin-right:6px}
+.kicker{margin:0;color:var(--muted);font-weight:700}
+h2{margin:2px 0 8px;font-size:1.55rem;line-height:1.15}
+.prompt{margin:0 0 6px;max-width:60ch}
+.rows{display:grid;gap:12px;margin:18px 0 12px}
+.row{display:grid;grid-template-columns:40px 1fr;column-gap:10px;align-items:center}
+.row label{display:flex;align-items:center;justify-content:center;height:100%}
+.row input{font:inherit;font-size:1.2rem;padding:10px 12px;border:2px solid var(--line);border-radius:10px;
+  background:var(--surface);color:var(--ink);width:100%}
+.row input::placeholder{color:var(--muted);opacity:.7}
+.row input:focus{outline:none;border-color:var(--carolina);box-shadow:0 0 0 3px rgba(75,156,211,.35)}
+.row input.err{border-color:var(--out)}
+.row .msg{grid-column:2;font-size:.92rem;color:var(--out);margin-top:4px}
+.row .msg:empty{display:none}
+.tools{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.symbols{display:flex;gap:6px}
+.symbols button{font:inherit;font-size:1.25rem;width:48px;height:42px;border:2px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--ink);cursor:pointer}
+.symbols button:hover{border-color:var(--carolina)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:.95rem;color:var(--muted);cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--carolina)}
+.status{font-size:.98rem;color:var(--muted);margin:14px 0 0}
+.status b{color:var(--ink)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{font:inherit;font-weight:700;padding:11px 18px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.btn.primary{background:var(--btn);color:var(--btn-ink)}
+.btn.secondary{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn.secondary:hover{border-color:var(--carolina)}
+.btn[hidden]{display:none}
+.note{margin-top:14px;padding:12px 14px;border-radius:10px;border-left:5px solid}
+.note p{margin:0}
+.note p+p,.note ul{margin-top:6px}
+.note ul{margin-bottom:0;padding-left:20px}
+.note.ok{background:var(--ok-bg);border-color:var(--in)}
+.note.bad{background:var(--bad-bg);border-color:var(--out)}
+.note.hint{background:var(--info-bg);border-color:var(--orange)}
+.note[hidden]{display:none}
+details{margin-top:18px;font-size:.95rem;color:var(--muted)}
+details summary{cursor:pointer}
+details p{margin:6px 0 0}
+.foot{margin-top:28px;display:flex;justify-content:flex-end}
+.linkbtn{background:none;border:none;color:var(--muted);font:inherit;font-size:.9rem;text-decoration:underline;cursor:pointer}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.who{font-size:.92rem;color:var(--muted);margin:6px 0 0}
+.overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.overlay[hidden]{display:none}
+.namebox{background:var(--surface);color:var(--ink);border-radius:16px;padding:24px;max-width:420px;width:100%;border:1px solid var(--line)}
+.namebox h2{margin:0 0 6px}
+.namebox p{margin:0 0 14px;color:var(--muted)}
+.namebox input{font:inherit;font-size:1.15rem;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);width:100%;margin-bottom:14px}
+.namebox input:focus{outline:none;border-color:var(--carolina);box-shadow:0 0 0 3px rgba(75,156,211,.35)}
+/* teacher */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.tabs button{font:inherit;font-weight:700;padding:8px 14px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tabs button[aria-current="true"]{background:var(--carolina);border-color:var(--carolina);color:#fff}
+.tabs .count{font-weight:400;opacity:.85}
+.tgrid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:900px){.tgrid{grid-template-columns:1fr}}
+.tlist ol{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px;max-height:70vh;overflow:auto}
+.tlist li button{width:100%;text-align:left;font:inherit;padding:10px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tlist li button[aria-current="true"]{border-color:var(--orange)}
+.tlist li button span{display:block;font-size:.9rem;color:var(--muted)}
+.tlist .empty{color:var(--muted);font-size:.95rem}
+.tfoot{margin-top:14px;display:flex;gap:16px;flex-wrap:wrap}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.stagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.stagehead h2{margin:0}
+.stagebtns{display:flex;gap:8px;flex-wrap:wrap}
+.stagebody{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+#tSetup{margin:0 0 18px}
+#tPlane{width:min(100%,68vh);aspect-ratio:1/1;flex:0 0 auto;border-radius:8px}
+.ineqs{list-style:none;margin:0;padding:0;display:grid;gap:14px;font-size:clamp(1.4rem,2.6vw,2.1rem);font-weight:700}
+.ineqs li{display:flex;align-items:center;gap:12px}
+.stage:fullscreen{background:var(--page);padding:28px;overflow:auto}
+.stage:fullscreen #tPlane{width:min(100%,82vh)}
+.stage:fullscreen .ineqs{font-size:clamp(1.8rem,3.4vw,2.8rem)}
+</style>
+</head>
+<body>
+<div id="studentApp" hidden>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Points In, Points Out</h1>
+      <p class="sub">Systems of linear inequalities, part 1 of 3</p>
+      <p class="who" id="who" hidden></p>
+    </div>
+    <nav aria-label="Levels"><ul class="levels" id="levels"></ul></nav>
+  </header>
+
+  <main>
+    <section class="board" aria-label="Graph">
+      <canvas id="plane" role="img" aria-label="Coordinate plane"></canvas>
+      <div class="legend">
+        <span><svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="var(--in)"/></svg>Must be a solution</span>
+        <span><svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="7.5" fill="var(--surface)" stroke="var(--out)" stroke-width="2"/><path d="M5.5 5.5l7 7M12.5 5.5l-7 7" stroke="var(--out)" stroke-width="2.4" stroke-linecap="round"/></svg>Must not be a solution</span>
+        <span><svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="var(--halo)" stroke-width="2" stroke-dasharray="3 3"/></svg>Not right yet</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="levelTitle">
+      <p class="kicker" id="levelKicker">Level 1</p>
+      <h2 id="levelTitle">Level</h2>
+      <p class="prompt" id="prompt"></p>
+
+      <div class="rows" id="rows"></div>
+
+      <div class="tools">
+        <div class="symbols" role="group" aria-label="Insert a symbol">
+          <button type="button" data-sym="<">&lt;</button>
+          <button type="button" data-sym=">">&gt;</button>
+          <button type="button" data-sym="≤">≤</button>
+          <button type="button" data-sym="≥">≥</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="showEach"> Show each inequality’s shading</label>
+      </div>
+
+      <p class="status" id="status" aria-live="polite"></p>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Check my system</button>
+        <button class="btn secondary" id="hintBtn" type="button">Show hint</button>
+        <button class="btn primary" id="nextBtn" type="button" hidden>Next level</button>
+      </div>
+
+      <div class="note hint" id="hint" hidden></div>
+      <div class="note" id="feedback" hidden aria-live="polite"></div>
+
+      <details>
+        <summary>Point coordinates</summary>
+        <p id="ptsIn"></p>
+        <p id="ptsOut"></p>
+      </details>
+    </section>
+  </main>
+
+  <div class="foot"><button class="linkbtn" id="resetBtn" type="button">Start over from level 1</button></div>
+</div>
+
+<div class="overlay" id="nameGate" hidden>
+  <form class="namebox" id="nameForm">
+    <h2>Before you start</h2>
+    <p>Type your first name and last initial so your teacher can see your solved systems.</p>
+    <label class="sr" for="nameInput">Your name</label>
+    <input id="nameInput" maxlength="30" autocomplete="off" placeholder="e.g. Maya R." required>
+    <button class="btn primary" type="submit">Start</button>
+  </form>
+</div>
+</div>
+
+<div id="teacherApp" hidden>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Class gallery</h1>
+      <p class="sub">Points In, Points Out: systems your students have solved</p>
+    </div>
+    <nav aria-label="Levels"><ul class="tabs" id="tLevels"></ul></nav>
+  </header>
+
+  <div class="note hint" id="tSetup" hidden>
+    <p><b>Live sharing isn’t connected yet.</b> Paste your Firebase config into <code>FIREBASE_CONFIG</code> near the top of this file’s last script, then reload this page.</p>
+  </div>
+
+  <div class="tgrid" id="tMain">
+    <aside class="tlist" aria-label="Submissions">
+      <label class="toggle"><input type="checkbox" id="hideNames" checked> Hide names on screen</label>
+      <ol id="subList"></ol>
+      <div class="tfoot">
+        <button class="linkbtn" id="clearLevel" type="button">Clear this level</button>
+        <button class="linkbtn" id="clearAll" type="button">Clear all levels</button>
+      </div>
+    </aside>
+    <section class="stage" id="stage" aria-live="polite">
+      <div class="stagehead">
+        <div>
+          <p class="kicker" id="stageKicker"></p>
+          <h2 id="stageName"></h2>
+        </div>
+        <div class="stagebtns">
+          <button class="btn secondary" id="prevSub" type="button">Previous</button>
+          <button class="btn secondary" id="nextSub" type="button">Next</button>
+          <button class="btn secondary" id="fsBtn" type="button">Full screen</button>
+        </div>
+      </div>
+      <div class="stagebody" id="stageBody">
+        <canvas id="tPlane" role="img" aria-label="Student system graphed"></canvas>
+        <ul class="ineqs" id="stageIneqs"></ul>
+      </div>
+      <p class="status" id="stageEmpty">No solved systems for this level yet. They’ll show up here as students solve it.</p>
+    </section>
+  </div>
+</div>
+</div>
+
+<script id="core">
+const VIEW = 10;
+
+const LEVELS = [
+  { title: "One line, one side", n: 1,
+    prompt: "Write one inequality whose solutions include every green point and none of the red points.",
+    inPts: [[2,5],[-3,6],[0,8]], outPts: [[1,-2],[4,0],[-5,-3]],
+    hint: "All the green points are high on the graph and all the red points are low. A horizontal line, y = something, can split them.",
+    ref: ["y > 2"] },
+  { title: "Squeeze it in", n: 2,
+    prompt: "Now you need a system of two inequalities. There are red points above and below the green ones.",
+    inPts: [[0,0],[4,2],[-6,-1],[7,-2]], outPts: [[1,5],[-4,6],[3,-6],[-2,-5]],
+    hint: "Use one inequality to block the red points on top and a second inequality to block the red points on the bottom.",
+    ref: ["y ≤ 3", "y ≥ -3"] },
+  { title: "Tilted strip", n: 2,
+    prompt: "Two inequalities. The green points run along a diagonal.",
+    inPts: [[0,0],[2,3],[-3,-2],[4,5]], outPts: [[3,-2],[-2,4],[5,1],[-5,1]],
+    hint: "Two parallel lines with the same slope can trap a strip of points between them. What slope do the green points follow?",
+    ref: ["y ≤ x + 3", "y ≥ x - 2"] },
+  { title: "On the line", n: 2,
+    prompt: "Watch for points that land exactly on your boundary lines. Solid lines include them. Dashed lines leave them out.",
+    inPts: [[2,-1],[0,0],[-5,3],[-4,-3],[1,6]], outPts: [[3,0],[6,1],[0,-4],[-6,-6],[5,8]],
+    hint: "A vertical line (x = something) can block the red points on the right. If a red point lands on one of your lines, that line needs to be dashed (< or >).",
+    ref: ["y ≥ 1/2x - 2", "x < 3"] },
+  { title: "Three sides", n: 3,
+    prompt: "Use three inequalities to build a triangle-shaped region.",
+    inPts: [[0,0],[2,3],[6,0],[1,1]], outPts: [[-1,2],[3,-1],[4,4],[0,7]],
+    hint: "Two of the sides can be the x-axis and the y-axis. The third side has to pass through (6, 0) or beyond it, and below (0, 7).",
+    ref: ["x ≥ 0", "y ≥ 0", "x + y ≤ 6"] }
+];
+
+const EPS = 1e-9;
+function L(x, y, c) { return { x, y, c }; }
+function isConst(a) { return Math.abs(a.x) < 1e-12 && Math.abs(a.y) < 1e-12; }
+function add(a, b) { return L(a.x + b.x, a.y + b.y, a.c + b.c); }
+function scale(a, k) { return L(a.x * k, a.y * k, a.c * k); }
+function mul(a, b) {
+  if (isConst(a)) return scale(b, a.c);
+  if (isConst(b)) return scale(a, b.c);
+  throw new Error("Multiplying x and y together isn’t linear. Each term should have just one x or one y.");
+}
+function div(a, b) {
+  if (!isConst(b)) throw new Error("Dividing by x or y isn’t linear.");
+  if (b.c === 0) throw new Error("You can’t divide by zero.");
+  return scale(a, 1 / b.c);
+}
+
+function parseLinear(src) {
+  const toks = [];
+  let i = 0;
+  while (i < src.length) {
+    const ch = src[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (/[0-9.]/.test(ch)) {
+      let j = i;
+      while (j < src.length && /[0-9.]/.test(src[j])) j++;
+      const s = src.slice(i, j);
+      if (!/^(\d+\.?\d*|\.\d+)$/.test(s)) throw new Error("“" + s + "” isn’t a number I can read.");
+      toks.push({ t: "num", v: parseFloat(s), s });
+      i = j; continue;
+    }
+    if (ch === "x" || ch === "y" || "+-*/()".includes(ch)) { toks.push({ t: ch, s: ch }); i++; continue; }
+    if (ch === "^") throw new Error("Exponents don’t belong in a linear inequality.");
+    throw new Error("I don’t know what “" + ch + "” means here.");
+  }
+  if (!toks.length) throw new Error("Both sides of the symbol need something.");
+  let p = 0;
+  const peek = () => toks[p];
+  const next = () => toks[p++];
+  function expr() {
+    let a = term();
+    while (peek() && (peek().t === "+" || peek().t === "-")) {
+      const op = next().t;
+      const b = term();
+      a = op === "+" ? add(a, b) : add(a, scale(b, -1));
+    }
+    return a;
+  }
+  function term() {
+    let a = unary();
+    while (peek()) {
+      const t = peek().t;
+      if (t === "*" || t === "/") { next(); const b = unary(); a = t === "*" ? mul(a, b) : div(a, b); }
+      else if (t === "num" || t === "x" || t === "y" || t === "(") { a = mul(a, unary()); }
+      else break;
+    }
+    return a;
+  }
+  function unary() {
+    const k = peek();
+    if (!k) throw new Error("Something is missing at the end.");
+    if (k.t === "-") { next(); return scale(unary(), -1); }
+    if (k.t === "+") { next(); return unary(); }
+    return primary();
+  }
+  function primary() {
+    const k = next();
+    if (!k) throw new Error("Something is missing at the end.");
+    if (k.t === "num") return L(0, 0, k.v);
+    if (k.t === "x") return L(1, 0, 0);
+    if (k.t === "y") return L(0, 1, 0);
+    if (k.t === "(") {
+      const e = expr();
+      if (!peek() || peek().t !== ")") throw new Error("A closing parenthesis is missing.");
+      next();
+      return e;
+    }
+    throw new Error("“" + k.s + "” is in an unexpected spot.");
+  }
+  const r = expr();
+  if (p < toks.length) throw new Error("“" + toks[p].s + "” is in an unexpected spot.");
+  return r;
+}
+
+function normalize(raw) {
+  return raw.toLowerCase()
+    .replace(/[−–—]/g, "-")
+    .replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥")
+    .replace(/[×·]/g, "*").replace(/÷/g, "/");
+}
+
+// Returns { a, b, c, strict } meaning a·x + b·y + c > 0 (strict) or ≥ 0.
+function parseIneq(raw) {
+  const s = normalize(raw);
+  const syms = s.match(/[<>≤≥]/g) || [];
+  if (syms.length === 0) {
+    if (s.includes("=")) throw new Error("Use <, >, ≤, or ≥ instead of =.");
+    throw new Error("Add an inequality symbol: <, >, ≤, or ≥.");
+  }
+  if (syms.length > 1) throw new Error("Use just one inequality symbol in each row.");
+  if (s.includes("=")) throw new Error("Use <, >, ≤, or ≥ without an extra = sign.");
+  const k = s.search(/[<>≤≥]/);
+  const op = s[k];
+  const left = s.slice(0, k), right = s.slice(k + 1);
+  if (!left.trim() || !right.trim()) throw new Error("Both sides of the symbol need something.");
+  let f = add(parseLinear(left), scale(parseLinear(right), -1));
+  if (op === "<" || op === "≤") f = scale(f, -1);
+  if (isConst(f)) throw new Error("Your inequality needs an x or a y.");
+  return { a: f.x, b: f.y, c: f.c, strict: op === "<" || op === ">" };
+}
+
+function value(q, pt) { return q.a * pt[0] + q.b * pt[1] + q.c; }
+function onLine(q, pt) { return Math.abs(value(q, pt)) < EPS; }
+function satisfies(q, pt) {
+  const v = value(q, pt);
+  if (Math.abs(v) < EPS) return !q.strict;
+  return v > 0;
+}
+function inRegion(qs, pt) { return qs.every(q => satisfies(q, pt)); }
+
+function clipPoly(poly, q) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const P = poly[i], Q = poly[(i + 1) % poly.length];
+    const vp = value(q, P), vq = value(q, Q);
+    if (vp >= 0) out.push(P);
+    if ((vp >= 0) !== (vq >= 0)) {
+      const t = vp / (vp - vq);
+      out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]);
+    }
+  }
+  return out;
+}
+</script>
+<script>
+/* ===== Teacher setup =====
+   Paste your Firebase web config here to turn on the class gallery.
+   Example:
+   const FIREBASE_CONFIG = {
+     apiKey: "...",
+     authDomain: "your-project.firebaseapp.com",
+     databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+     projectId: "your-project",
+     appId: "..."
+   };
+   Leave it as null to use the activity without sharing. */
+const FIREBASE_CONFIG = null;
+
+(function () {
+  const KEY = "sys-ineq-part1-v2";
+  const NAME_KEY = "sys-ineq-student-name";
+  const DB_ROOT = "systemsIneqPart1";
+  const ROW_VARS = ["--row1", "--row2", "--row3"];
+  const TEACHER = new URLSearchParams(location.search).has("teacher") || location.hash === "#teacher";
+
+  const $ = id => document.getElementById(id);
+  const fmtNum = n => (n < 0 ? "−" + Math.abs(n) : String(n));
+  const fmtPt = p => "(" + fmtNum(p[0]) + ", " + fmtNum(p[1]) + ")";
+  const pretty = s => normalizeDisplay(s);
+  function normalizeDisplay(s) {
+    return String(s).replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥").replace(/-/g, "−")
+      .replace(/\s*([<>≤≥])\s*/g, " $1 ");
+  }
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  let db = null;
+  try {
+    if (FIREBASE_CONFIG && window.firebase) {
+      if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      db = firebase.database();
+    }
+  } catch (e) { console.warn("Firebase not available:", e); db = null; }
+
+  // ---------- shared drawing ----------
+  function paint(canvas, lv, live, opts) {
+    const ctx = canvas.getContext("2d");
+    const W = Math.max(200, Math.round(canvas.getBoundingClientRect().width));
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(W * dpr); }
+    const cs = getComputedStyle(document.documentElement);
+    const v = n => cs.getPropertyValue(n).trim();
+    const X = x => (x + VIEW) / (2 * VIEW) * W;
+    const Y = y => (VIEW - y) / (2 * VIEW) * W;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, W);
+    ctx.fillStyle = v("--surface");
+    ctx.fillRect(0, 0, W, W);
+
+    ctx.lineWidth = 1;
+    for (let k = -VIEW; k <= VIEW; k++) {
+      ctx.strokeStyle = k % 5 === 0 ? v("--grid-major") : v("--grid-minor");
+      ctx.beginPath(); ctx.moveTo(X(k) + .5, 0); ctx.lineTo(X(k) + .5, W); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, Y(k) + .5); ctx.lineTo(W, Y(k) + .5); ctx.stroke();
+    }
+
+    const box = [[-VIEW, -VIEW], [VIEW, -VIEW], [VIEW, VIEW], [-VIEW, VIEW]];
+    const fillPoly = (poly, color) => {
+      if (poly.length < 3) return;
+      ctx.beginPath();
+      poly.forEach((p, j) => j ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])));
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+    };
+    if (opts.showEach) {
+      live.forEach(({ q, i }) => {
+        ctx.globalAlpha = .13;
+        fillPoly(clipPoly(box, q), v(ROW_VARS[i]));
+        ctx.globalAlpha = 1;
+      });
+    }
+    if (live.length) {
+      let region = box;
+      live.forEach(({ q }) => { region = clipPoly(region, q); });
+      fillPoly(region, v("--region"));
+    }
+
+    ctx.strokeStyle = v("--axis");
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), W); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, Y(0)); ctx.lineTo(W, Y(0)); ctx.stroke();
+    const fs = Math.max(10, Math.round(W / 46));
+    ctx.font = fs + 'px "Atkinson Hyperlegible", system-ui, sans-serif';
+    ctx.fillStyle = v("--muted");
+    for (let k = -VIEW + 2; k <= VIEW - 2; k += 2) {
+      if (k === 0) continue;
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.fillText(fmtNum(k), X(k), Y(0) + 4);
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillText(fmtNum(k), X(0) - 5, Y(k));
+    }
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, W, W); ctx.clip();
+    live.forEach(({ q, i }) => {
+      const n2 = q.a * q.a + q.b * q.b;
+      const p0 = [-q.a * q.c / n2, -q.b * q.c / n2];
+      const len = Math.sqrt(n2);
+      const d = [-q.b / len, q.a / len];
+      const T = VIEW * 4;
+      ctx.strokeStyle = v(ROW_VARS[i]);
+      ctx.lineWidth = Math.max(3, W / 200);
+      ctx.setLineDash(q.strict ? [11, 8] : []);
+      ctx.beginPath();
+      ctx.moveTo(X(p0[0] - T * d[0]), Y(p0[1] - T * d[1]));
+      ctx.lineTo(X(p0[0] + T * d[0]), Y(p0[1] + T * d[1]));
+      ctx.stroke();
+    });
+    ctx.restore();
+    ctx.setLineDash([]);
+
+    const qs = live.map(o => o.q);
+    const r = Math.max(6, W / 70);
+    const halo = p => {
+      ctx.strokeStyle = v("--halo");
+      ctx.lineWidth = 2.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), r + 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+    };
+    const showHalos = opts.halos && live.length > 0;
+    lv.inPts.forEach(p => {
+      if (showHalos && !inRegion(qs, p)) halo(p);
+      ctx.beginPath(); ctx.arc(X(p[0]), Y(p[1]), r, 0, Math.PI * 2);
+      ctx.fillStyle = v("--in"); ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = v("--surface"); ctx.stroke();
+    });
+    lv.outPts.forEach(p => {
+      if (showHalos && inRegion(qs, p)) halo(p);
+      const px = X(p[0]), py = Y(p[1]);
+      ctx.beginPath(); ctx.arc(px, py, r + .5, 0, Math.PI * 2);
+      ctx.fillStyle = v("--surface"); ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = v("--out"); ctx.stroke();
+      const s = r * .55;
+      ctx.lineWidth = 2.6; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(px - s, py - s); ctx.lineTo(px + s, py + s);
+      ctx.moveTo(px + s, py - s); ctx.lineTo(px - s, py + s); ctx.stroke();
+      ctx.lineCap = "butt";
+    });
+    lv.inPts.concat(lv.outPts).forEach(p => {
+      const px = X(p[0]), py = Y(p[1]);
+      const txt = fmtPt(p);
+      ctx.font = "700 " + fs + 'px "Atkinson Hyperlegible", system-ui, sans-serif';
+      const tw = ctx.measureText(txt).width;
+      const right = px + r + 6 + tw < W - 4;
+      const tx = right ? px + r + 5 : px - r - 5;
+      const ty = py - r - 3 < fs ? py + r + fs : py - r - 3;
+      ctx.textAlign = right ? "left" : "right";
+      ctx.textBaseline = "alphabetic";
+      ctx.lineWidth = 3.5; ctx.lineJoin = "round";
+      ctx.strokeStyle = v("--surface");
+      ctx.strokeText(txt, tx, ty);
+      ctx.fillStyle = v("--ink");
+      ctx.fillText(txt, tx, ty);
+    });
+  }
+
+  function swatchSVG(i, strict, size) {
+    const w = size || 34;
+    const dash = strict ? ' stroke-dasharray="6 5"' : "";
+    return '<svg width="' + w + '" height="14" aria-hidden="true"><line x1="2" y1="7" x2="' + (w - 2) + '" y2="7" stroke="var(' +
+      ROW_VARS[i] + ')" stroke-width="3.5" stroke-linecap="round"' + dash + '/></svg>';
+  }
+
+  function watchTheme(redraw) {
+    if (window.matchMedia) {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      mq.addEventListener && mq.addEventListener("change", redraw);
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+  }
+
+  if (TEACHER) teacherMode(); else studentMode();
+
+  // =====================================================================
+  function studentMode() {
+    $("studentApp").hidden = false;
+    const state = { level: 0, solved: new Set(), answers: {}, lastInput: 0, showEach: false, name: "" };
+    const rowsState = [];
+    const canvas = $("plane");
+
+    try { state.name = localStorage.getItem(NAME_KEY) || ""; } catch (e) { }
+
+    function load() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY) || "null");
+        if (d) {
+          state.solved = new Set((d.solved || []).filter(i => i < LEVELS.length));
+          state.answers = d.answers || {};
+          state.level = Math.min(Math.max(d.level | 0, 0), LEVELS.length - 1);
+        }
+      } catch (e) { }
+    }
+    function save() {
+      try { localStorage.setItem(KEY, JSON.stringify({ solved: [...state.solved], answers: state.answers, level: state.level })); } catch (e) { }
+    }
+
+    function showWho() {
+      const who = $("who");
+      if (!db || !state.name) { who.hidden = true; return; }
+      who.hidden = false;
+      who.innerHTML = "Working as <b>" + esc(state.name) + "</b>. <button class=\"linkbtn\" id=\"changeName\" type=\"button\">Change name</button>";
+      $("changeName").addEventListener("click", askName);
+    }
+    function askName() {
+      $("nameGate").hidden = false;
+      $("nameInput").value = state.name;
+      $("nameInput").focus();
+    }
+    $("nameForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const n = $("nameInput").value.trim().replace(/\s+/g, " ");
+      if (!n) return;
+      state.name = n.slice(0, 30);
+      try { localStorage.setItem(NAME_KEY, state.name); } catch (err) { }
+      $("nameGate").hidden = true;
+      showWho();
+      rowsState[0] && rowsState[0].input.focus();
+    });
+
+    function sendToTeacher(level, ineqs) {
+      const el = $("shareStatus");
+      if (!db || !state.name) { if (el) el.remove(); return; }
+      const key = state.name.toLowerCase().replace(/[.#$\[\]\/\s]+/g, "_");
+      db.ref(DB_ROOT + "/levels/" + level + "/" + key)
+        .set({ name: state.name, ineqs, t: firebase.database.ServerValue.TIMESTAMP })
+        .then(() => { if (el) el.textContent = "Your system was sent to your teacher."; })
+        .catch(() => { if (el) el.textContent = "Your system couldn’t be sent to your teacher, but your work is still saved on this device."; });
+    }
+
+    function buildStrip() {
+      const ul = $("levels");
+      ul.innerHTML = "";
+      LEVELS.forEach((lv, i) => {
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = i + 1;
+        b.setAttribute("aria-label", "Level " + (i + 1) + (state.solved.has(i) ? ", solved" : ""));
+        if (state.solved.has(i)) b.classList.add("solved");
+        if (i === state.level) b.setAttribute("aria-current", "true");
+        b.addEventListener("click", () => { state.level = i; save(); renderLevel(); });
+        li.appendChild(b);
+        ul.appendChild(li);
+      });
+    }
+
+    function renderLevel() {
+      const lv = LEVELS[state.level];
+      $("levelKicker").textContent = "Level " + (state.level + 1) + " of " + LEVELS.length;
+      $("levelTitle").textContent = lv.title;
+      $("prompt").textContent = lv.prompt;
+      $("ptsIn").textContent = "Green (must be a solution): " + lv.inPts.map(fmtPt).join(", ");
+      $("ptsOut").textContent = "Red (must not be a solution): " + lv.outPts.map(fmtPt).join(", ");
+      canvas.setAttribute("aria-label", "Coordinate plane from −10 to 10. Green points that must be solutions: " +
+        lv.inPts.map(fmtPt).join(", ") + ". Red points that must not be solutions: " + lv.outPts.map(fmtPt).join(", ") + ".");
+
+      const saved = state.answers[state.level] || [];
+      const rows = $("rows");
+      rows.innerHTML = "";
+      rowsState.length = 0;
+      for (let i = 0; i < lv.n; i++) {
+        const row = document.createElement("div");
+        row.className = "row";
+        const id = "ineq" + i;
+        row.innerHTML = '<label for="' + id + '" class="sw">' + swatchSVG(i, false) + '<span class="sr">Inequality ' + (i + 1) + '</span></label>' +
+          '<input id="' + id + '" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' +
+          (i === 0 ? "e.g. y ≤ 2x − 3" : "Inequality " + (i + 1)) + '">' +
+          '<div class="msg" id="msg' + i + '"></div>';
+        rows.appendChild(row);
+        const input = row.querySelector("input");
+        input.value = saved[i] || "";
+        rowsState.push({ input, label: row.querySelector(".sw"), msg: row.querySelector(".msg"), touched: false, q: null, err: null });
+        input.addEventListener("focus", () => { state.lastInput = i; });
+        input.addEventListener("input", () => {
+          const val = input.value;
+          if (/<=|>=|=<|=>/.test(val)) {
+            const pos = input.selectionStart;
+            const nv = val.replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥");
+            input.value = nv;
+            const shift = val.length - nv.length;
+            input.setSelectionRange(pos - shift, pos - shift);
+          }
+          rowsState[i].touched = false;
+          hideFeedback();
+          update();
+        });
+        input.addEventListener("blur", () => { if (input.value.trim()) { rowsState[i].touched = true; update(); } });
+        input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); check(); } });
+      }
+      state.lastInput = 0;
+      $("hint").hidden = true;
+      $("hint").textContent = lv.hint;
+      $("hintBtn").textContent = "Show hint";
+      hideFeedback();
+      $("nextBtn").hidden = !state.solved.has(state.level);
+      $("nextBtn").textContent = state.level === LEVELS.length - 1 ? "Back to level 1" : "Next level";
+      buildStrip();
+      update();
+    }
+
+    function hideFeedback() { const fb = $("feedback"); fb.hidden = true; fb.innerHTML = ""; }
+
+    const live = () => rowsState.map((r, i) => r.q ? { q: r.q, i } : null).filter(Boolean);
+    const draw = () => paint(canvas, LEVELS[state.level], live(), { showEach: state.showEach, halos: true });
+
+    function update() {
+      rowsState.forEach((r, i) => {
+        const raw = r.input.value;
+        r.q = null; r.err = null;
+        if (raw.trim()) { try { r.q = parseIneq(raw); } catch (e) { r.err = e.message; } }
+        const showErr = r.err && r.touched;
+        r.msg.textContent = showErr ? r.err : "";
+        r.input.classList.toggle("err", !!showErr);
+        r.input.setAttribute("aria-invalid", showErr ? "true" : "false");
+        if (showErr) r.input.setAttribute("aria-describedby", "msg" + i); else r.input.removeAttribute("aria-describedby");
+        r.label.innerHTML = swatchSVG(i, r.q ? r.q.strict : false) + '<span class="sr">Inequality ' + (i + 1) + "</span>";
+      });
+      state.answers[state.level] = rowsState.map(r => r.input.value);
+      save();
+      const lv = LEVELS[state.level];
+      const qs = live().map(o => o.q);
+      const gIn = lv.inPts.filter(p => inRegion(qs, p)).length;
+      const rOut = lv.outPts.filter(p => !inRegion(qs, p)).length;
+      $("status").innerHTML = "Green points in your region: <b>" + gIn + " of " + lv.inPts.length +
+        "</b>. Red points kept out: <b>" + rOut + " of " + lv.outPts.length + "</b>.";
+      draw();
+    }
+
+    function check() {
+      const lv = LEVELS[state.level];
+      rowsState.forEach(r => { r.touched = true; });
+      update();
+      const fb = $("feedback");
+      fb.hidden = false;
+      const empty = rowsState.filter(r => !r.input.value.trim()).length;
+      const bad = rowsState.filter(r => r.err).length;
+      if (empty) {
+        fb.className = "note bad";
+        fb.innerHTML = "<p>This level needs " + lv.n + " inequalit" + (lv.n === 1 ? "y" : "ies") +
+          ". Fill in every row, even if one of them isn’t doing much work.</p>";
+        return;
+      }
+      if (bad) {
+        fb.className = "note bad";
+        fb.innerHTML = "<p>Fix the row" + (bad > 1 ? "s" : "") + " marked in red so they can be graphed.</p>";
+        return;
+      }
+      const qs = rowsState.map(r => r.q);
+      const missingIn = lv.inPts.filter(p => !inRegion(qs, p));
+      const strayOut = lv.outPts.filter(p => inRegion(qs, p));
+
+      if (!missingIn.length && !strayOut.length) {
+        state.solved.add(state.level);
+        save();
+        buildStrip();
+        fb.className = "note ok";
+        const refs = lv.ref.map(pretty);
+        const sys = refs.length === 1 ? refs[0] : refs.length === 2 ? refs.join(" and ") : refs.slice(0, -1).join(", ") + ", and " + refs[refs.length - 1];
+        fb.innerHTML = "<p><b>Every green point is in and every red point is out.</b></p>" +
+          "<p>Here’s another " + (refs.length === 1 ? "inequality" : "system") + " that works: " + esc(sys) +
+          ". Many answers work, so yours can look different. How are they alike?</p>" +
+          (db && state.name ? '<p id="shareStatus">Sending your system to your teacher…</p>' : "") +
+          (state.solved.size === LEVELS.length ? "<p>You’ve solved all " + LEVELS.length + " levels.</p>" : "");
+        sendToTeacher(state.level, rowsState.map(r => r.input.value.trim()));
+        $("nextBtn").hidden = false;
+        $("nextBtn").focus();
+        return;
+      }
+
+      const items = [];
+      missingIn.forEach(p => {
+        const dashed = qs.findIndex(q => q.strict && onLine(q, p));
+        if (dashed >= 0) items.push("<li>Green " + fmtPt(p) + " sits on the dashed line from row " + (dashed + 1) +
+          ", so it isn’t a solution. Would ≤ or ≥ fix that?</li>");
+        else {
+          const rows = qs.map((q, i) => satisfies(q, p) ? null : i + 1).filter(Boolean);
+          items.push("<li>Green " + fmtPt(p) + " is outside your region. It doesn’t make row" +
+            (rows.length > 1 ? "s " + rows.join(" and ") : " " + rows[0]) + " true.</li>");
+        }
+      });
+      strayOut.forEach(p => {
+        const solid = qs.findIndex(q => !q.strict && onLine(q, p));
+        if (solid >= 0) items.push("<li>Red " + fmtPt(p) + " sits on the solid line from row " + (solid + 1) +
+          ", so it counts as a solution. Would < or > fix that?</li>");
+        else items.push("<li>Red " + fmtPt(p) + " is inside your region. It makes every inequality true.</li>");
+      });
+      fb.className = "note bad";
+      fb.innerHTML = "<p>Not yet. Look at the points circled on the graph.</p><ul>" + items.join("") + "</ul>";
+    }
+
+    document.querySelectorAll(".symbols button").forEach(b => {
+      b.addEventListener("mousedown", e => e.preventDefault());
+      b.addEventListener("click", () => {
+        const r = rowsState[state.lastInput] || rowsState[0];
+        if (!r) return;
+        const el = r.input;
+        const start = el.selectionStart ?? el.value.length, end = el.selectionEnd ?? el.value.length;
+        el.value = el.value.slice(0, start) + b.dataset.sym + el.value.slice(end);
+        el.focus();
+        el.setSelectionRange(start + 1, start + 1);
+        r.touched = false;
+        hideFeedback();
+        update();
+      });
+    });
+    $("showEach").addEventListener("change", e => { state.showEach = e.target.checked; draw(); });
+    $("checkBtn").addEventListener("click", check);
+    $("hintBtn").addEventListener("click", () => {
+      const h = $("hint");
+      h.hidden = !h.hidden;
+      $("hintBtn").textContent = h.hidden ? "Show hint" : "Hide hint";
+    });
+    $("nextBtn").addEventListener("click", () => {
+      state.level = (state.level + 1) % LEVELS.length;
+      save();
+      renderLevel();
+      rowsState[0] && rowsState[0].input.focus();
+    });
+    $("resetBtn").addEventListener("click", () => {
+      if (!confirm("Clear all your answers and start over from level 1?")) return;
+      state.level = 0; state.solved = new Set(); state.answers = {};
+      save();
+      renderLevel();
+    });
+
+    if (window.ResizeObserver) new ResizeObserver(draw).observe(canvas);
+    else window.addEventListener("resize", draw);
+    watchTheme(draw);
+
+    load();
+    renderLevel();
+    showWho();
+    if (db && !state.name) askName();
+  }
+
+  // =====================================================================
+  function teacherMode() {
+    $("teacherApp").hidden = false;
+    document.title = "Class gallery | Points In, Points Out";
+    const t = { level: 0, data: {}, selected: null, hideNames: true };
+    const canvas = $("tPlane");
+
+    if (!db) { $("tSetup").hidden = false; }
+
+    function subsFor(level) {
+      const obj = t.data[level] || {};
+      return Object.keys(obj).map(k => Object.assign({ key: k }, obj[k]))
+        .sort((a, b) => (a.t || 0) - (b.t || 0));
+    }
+
+    function renderTabs() {
+      const ul = $("tLevels");
+      ul.innerHTML = "";
+      LEVELS.forEach((lv, i) => {
+        const n = subsFor(i).length;
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = "Level " + (i + 1) + ' <span class="count">(' + n + ")</span>";
+        b.setAttribute("aria-label", "Level " + (i + 1) + ", " + n + " solved");
+        if (i === t.level) b.setAttribute("aria-current", "true");
+        b.addEventListener("click", () => { t.level = i; t.selected = null; render(); });
+        li.appendChild(b);
+        ul.appendChild(li);
+      });
+    }
+
+    function label(sub, idx) { return t.hideNames ? "Student " + (idx + 1) : sub.name; }
+
+    function render() {
+      renderTabs();
+      const subs = subsFor(t.level);
+      if (t.selected && !subs.some(s => s.key === t.selected)) t.selected = null;
+      if (!t.selected && subs.length) t.selected = subs[0].key;
+
+      const list = $("subList");
+      list.innerHTML = "";
+      if (!subs.length) {
+        list.innerHTML = '<li class="empty">' + (db ? "Waiting for students to solve this level." : "Connect Firebase to collect student work.") + "</li>";
+      }
+      subs.forEach((s, idx) => {
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = "<b>" + esc(label(s, idx)) + "</b><span>" + (s.ineqs || []).map(x => esc(pretty(x))).join("; ") + "</span>";
+        if (s.key === t.selected) b.setAttribute("aria-current", "true");
+        b.addEventListener("click", () => { t.selected = s.key; render(); });
+        li.appendChild(b);
+        list.appendChild(li);
+      });
+
+      const lv = LEVELS[t.level];
+      $("stageKicker").textContent = "Level " + (t.level + 1) + ": " + lv.title;
+      const idx = subs.findIndex(s => s.key === t.selected);
+      const sub = subs[idx];
+      $("stageEmpty").hidden = !!sub;
+      $("prevSub").disabled = !sub || idx <= 0;
+      $("nextSub").disabled = !sub || idx >= subs.length - 1;
+      const ul = $("stageIneqs");
+      ul.innerHTML = "";
+      let live = [];
+      if (sub) {
+        $("stageName").textContent = t.hideNames ? "Student " + (idx + 1) + "’s system" : sub.name + "’s system";
+        (sub.ineqs || []).forEach((s, i) => {
+          let q = null;
+          try { q = parseIneq(s); } catch (e) { }
+          if (q && i < 3) live.push({ q, i });
+          const li = document.createElement("li");
+          li.innerHTML = swatchSVG(i, q ? q.strict : false, 48) + "<span>" + esc(pretty(s)) + "</span>";
+          ul.appendChild(li);
+        });
+      } else {
+        $("stageName").textContent = "Level " + (t.level + 1) + " points";
+      }
+      paintStage(live);
+      canvas.setAttribute("aria-label", sub ? "Graph of " + $("stageName").textContent : "Graph of the level’s points");
+    }
+
+    let lastLive = [];
+    function paintStage(live) {
+      if (live) lastLive = live;
+      paint(canvas, LEVELS[t.level], lastLive, { showEach: false, halos: false });
+    }
+
+    $("hideNames").addEventListener("change", e => { t.hideNames = e.target.checked; render(); });
+    $("prevSub").addEventListener("click", () => {
+      const subs = subsFor(t.level); const i = subs.findIndex(s => s.key === t.selected);
+      if (i > 0) { t.selected = subs[i - 1].key; render(); }
+    });
+    $("nextSub").addEventListener("click", () => {
+      const subs = subsFor(t.level); const i = subs.findIndex(s => s.key === t.selected);
+      if (i < subs.length - 1) { t.selected = subs[i + 1].key; render(); }
+    });
+    $("fsBtn").addEventListener("click", () => {
+      const st = $("stage");
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (st.requestFullscreen) st.requestFullscreen();
+    });
+    document.addEventListener("fullscreenchange", () => {
+      $("fsBtn").textContent = document.fullscreenElement ? "Exit full screen" : "Full screen";
+      setTimeout(() => paintStage(), 60);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.target.tagName === "INPUT") return;
+      if (e.key === "ArrowRight") $("nextSub").click();
+      if (e.key === "ArrowLeft") $("prevSub").click();
+    });
+    $("clearLevel").addEventListener("click", () => {
+      if (!db) return;
+      if (confirm("Delete all student submissions for level " + (t.level + 1) + "?")) db.ref(DB_ROOT + "/levels/" + t.level).remove();
+    });
+    $("clearAll").addEventListener("click", () => {
+      if (!db) return;
+      if (confirm("Delete all student submissions for every level? Do this before a new class period.")) db.ref(DB_ROOT).remove();
+    });
+
+    if (window.ResizeObserver) new ResizeObserver(() => paintStage()).observe(canvas);
+    else window.addEventListener("resize", () => paintStage());
+    watchTheme(() => paintStage());
+
+    if (db) {
+      db.ref(DB_ROOT + "/levels").on("value", snap => {
+        const val = snap.val() || {};
+        t.data = Array.isArray(val) ? Object.assign({}, val) : val;
+        render();
+      }, err => {
+        $("tSetup").hidden = false;
+        $("tSetup").innerHTML = "<p><b>Couldn’t read from Firebase.</b> Check that your Realtime Database rules allow reading and writing <code>" + DB_ROOT + "</code>.</p>";
+      });
+    }
+    render();
+  }
+})();
+
+</script>
+</body>
+</html>
