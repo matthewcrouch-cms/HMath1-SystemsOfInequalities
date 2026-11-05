@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Match the System | Systems of Inequalities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#EAF2F9; --surface:#FFFFFF; --ink:#13294B; --muted:#4A5D78; --line:#C9D8E8;
+  --carolina:#4B9CD3; --orange:#F56600; --btn:#C75300; --btn-ink:#FFFFFF;
+  --in:#1E8A4C; --out:#C8102E; --boundary:#13294B;
+  --grid-minor:#E3ECF5; --grid-major:#C3D5E8; --axis:#6E82A0;
+  --region:rgba(75,156,211,.42);
+  --ok-bg:#E3F3EA; --bad-bg:#FCEBEE;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+    --carolina:#5BAEE6; --orange:#FF7A1F; --btn:#E36A12; --btn-ink:#FFFFFF;
+    --in:#3CC476; --out:#FF5C70; --boundary:#F2F6FB;
+    --grid-minor:#1C2E46; --grid-major:#2B4565; --axis:#7F93B0;
+    --region:rgba(91,174,230,.45);
+    --ok-bg:#16382A; --bad-bg:#3C1C25;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+  --carolina:#5BAEE6; --orange:#FF7A1F; --btn:#E36A12; --btn-ink:#FFFFFF;
+  --in:#3CC476; --out:#FF5C70; --boundary:#F2F6FB;
+  --grid-minor:#1C2E46; --grid-major:#2B4565; --axis:#7F93B0;
+  --region:rgba(91,174,230,.45);
+  --ok-bg:#16382A; --bad-bg:#3C1C25;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:17px;line-height:1.5}
+.wrap{max-width:1140px;margin:0 auto;padding:22px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 28px;margin-bottom:22px}
+h1{font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1.08;margin:0;letter-spacing:-.01em}
+.sub{margin:6px 0 0;color:var(--muted)}
+.progress{display:flex;gap:8px;list-style:none;margin:0;padding:0;align-items:center}
+.progress li{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;font-weight:700}
+.progress li.now{box-shadow:0 0 0 3px var(--page),0 0 0 5px var(--orange)}
+.progress li.right{background:var(--in);border-color:var(--in);color:#fff}
+.progress li.wrong{background:var(--out);border-color:var(--out);color:#fff}
+.layout{display:grid;grid-template-columns:minmax(260px,330px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+.kicker{margin:0;color:var(--muted);font-weight:700}
+h2{margin:2px 0 12px;font-size:1.45rem;line-height:1.2}
+.system{display:flex;align-items:stretch;gap:12px;margin:8px 0 18px}
+.brace{width:14px;border:3px solid var(--carolina);border-right:none;border-radius:14px 0 0 14px}
+.system ul{list-style:none;margin:0;padding:4px 0;display:grid;gap:8px;font-size:clamp(1.5rem,3vw,1.9rem);font-weight:700}
+.side p{margin:0 0 10px;color:var(--muted);max-width:40ch}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.choice{position:relative;display:block;width:100%;padding:8px 8px 6px;border:3px solid var(--line);border-radius:14px;
+  background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.choice:hover:not(:disabled){border-color:var(--carolina)}
+.choice[aria-pressed="true"]{border-color:var(--orange)}
+.choice.correct{border-color:var(--in)}
+.choice.incorrect{border-color:var(--out)}
+.choice:disabled{cursor:default}
+.choice canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:8px}
+.choice .tag{display:flex;justify-content:space-between;align-items:center;font-weight:700;padding:6px 4px 0}
+.choice .mark{font-size:.92rem}
+.choice.correct .mark{color:var(--in)}
+.choice.incorrect .mark{color:var(--out)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{font:inherit;font-weight:700;padding:11px 18px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.btn.primary{background:var(--btn);color:var(--btn-ink)}
+.btn.primary:disabled{opacity:.45;cursor:not-allowed}
+.btn.secondary{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn[hidden]{display:none}
+.note{margin-top:14px;padding:12px 14px;border-radius:10px;border-left:5px solid}
+.note p{margin:0}
+.note p+p{margin-top:6px}
+.note.ok{background:var(--ok-bg);border-color:var(--in)}
+.note.bad{background:var(--bad-bg);border-color:var(--out)}
+.note[hidden]{display:none}
+.score{font-size:clamp(3rem,9vw,5.5rem);font-weight:700;line-height:1;margin:6px 0 4px}
+.review{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:12px;max-width:760px}
+.review li{background:var(--surface);border:1px solid var(--line);border-left:6px solid;border-radius:10px;padding:12px 14px}
+.review li.right{border-left-color:var(--in)}
+.review li.wrong{border-left-color:var(--out)}
+.review b{display:block}
+.review span{color:var(--muted)}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Match the System</h1>
+      <p class="sub">Systems of linear inequalities, part 2 of 3</p>
+    </div>
+    <ol class="progress" id="progress" aria-label="Progress"></ol>
+  </header>
+
+  <div id="quiz" class="layout">
+    <section class="side" aria-labelledby="qTitle">
+      <p class="kicker" id="qKicker">Question 1 of 4</p>
+      <h2 id="qTitle">Which graph shows this system?</h2>
+      <div class="system"><div class="brace" aria-hidden="true"></div><ul id="system"></ul></div>
+      <p>Check the slope and intercept of each line, whether each line is solid or dashed, and which side is shaded.</p>
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button" disabled>Check answer</button>
+        <button class="btn primary" id="nextBtn" type="button" hidden>Next question</button>
+      </div>
+      <div class="note" id="feedback" hidden aria-live="polite"></div>
+    </section>
+    <section aria-label="Graph choices">
+      <div class="choices" id="choices"></div>
+    </section>
+  </div>
+
+  <section id="results" hidden aria-labelledby="resTitle">
+    <p class="kicker">Your score</p>
+    <p class="score" id="score"></p>
+    <h2 id="resTitle"></h2>
+    <ol class="review" id="review"></ol>
+    <div class="actions"><button class="btn secondary" id="againBtn" type="button">Try again</button></div>
+  </section>
+</div>
+
+<script>
+const VIEW = 10;
+const LETTERS = ["A", "B", "C", "D"];
+
+const QUESTIONS = [
+  { system: ["y > 2x − 3", "y ≤ −x + 3"], correct: 2,
+    explain: "y > 2x − 3 is a dashed line with a slope of 2, shaded above. y ≤ −x + 3 is a solid line with a slope of −1, shaded below. The solutions are where the two shadings overlap.",
+    choices: [
+      { ineqs: ["y < 2x - 3", "y <= -x + 3"], why: "This graph shades below the line y = 2x − 3. The > symbol means the solutions are above that line." },
+      { ineqs: ["y >= 2x - 3", "y < -x + 3"], why: "The shading is right, but the line styles are swapped. The > in the first inequality needs a dashed line, and the ≤ in the second needs a solid line." },
+      { ineqs: ["y > 2x - 3", "y <= -x + 3"] },
+      { ineqs: ["y > -2x - 3", "y <= -x + 3"], why: "One line in this graph has a slope of −2, so it falls from left to right. The line y = 2x − 3 has a slope of 2, so it should rise." }
+    ] },
+  { system: ["y ≥ ½x + 1", "x < 3"], correct: 0,
+    explain: "x < 3 is a dashed vertical line at x = 3, shaded to the left. y ≥ ½x + 1 is a solid line through (0, 1) with a slope of ½, shaded above.",
+    choices: [
+      { ineqs: ["y >= 1/2x + 1", "x < 3"] },
+      { ineqs: ["y >= 1/2x + 1", "y < 3"], why: "This graph uses a horizontal line, y = 3. The inequality x < 3 needs a vertical line at x = 3." },
+      { ineqs: ["y >= 1/2x + 1", "x > 3"], why: "This graph shades to the right of x = 3. The inequality x < 3 means x-values less than 3, so the shading goes to the left." },
+      { ineqs: ["y >= 2x + 1", "x < 3"], why: "The slanted line in this graph has a slope of 2: up 2 for every 1 to the right. A slope of ½ means up 1 for every 2 to the right." }
+    ] },
+  { system: ["2x + 3y ≤ 6", "y > −2"], correct: 3,
+    explain: "Solving 2x + 3y ≤ 6 for y gives y ≤ −⅔x + 2: a solid line through (0, 2) and (3, 0), shaded below. y > −2 is a dashed horizontal line, shaded above.",
+    choices: [
+      { ineqs: ["2x + 3y >= 6", "y > -2"], why: "This graph shades above the line 2x + 3y = 6. Test (0, 0): 2(0) + 3(0) = 0, and 0 ≤ 6 is true, so the side with the origin should be shaded." },
+      { ineqs: ["y <= 2/3x + 2", "y > -2"], why: "The slanted line in this graph has a positive slope. Solving 2x + 3y ≤ 6 for y gives a slope of −⅔, so the line falls from left to right." },
+      { ineqs: ["y <= -2/3x + 6", "y > -2"], why: "The slanted line in this graph crosses the y-axis at 6. When you divide every term of 3y ≤ −2x + 6 by 3, the y-intercept becomes 2." },
+      { ineqs: ["2x + 3y <= 6", "y > -2"] }
+    ] },
+  { system: ["x ≥ 0", "y ≥ 0", "x + 2y < 8"], correct: 1,
+    explain: "x ≥ 0 and y ≥ 0 keep the region in the first quadrant, with solid boundaries on the axes. x + 2y < 8 is a dashed line through (8, 0) and (0, 4), shaded below. Together they make a triangle.",
+    choices: [
+      { ineqs: ["x >= 0", "y >= 0", "x + 2y > 8"], why: "This graph shades above the line x + 2y = 8. Test (0, 0): 0 + 2(0) = 0, and 0 < 8 is true, so the side with the origin should be shaded." },
+      { ineqs: ["x >= 0", "y >= 0", "x + 2y < 8"] },
+      { ineqs: ["x >= 0", "y >= 0", "y < -2x + 8"], why: "The dashed line in this graph goes through (4, 0) and (0, 8). The line x + 2y = 8 goes through (8, 0) and (0, 4)." },
+      { ineqs: ["x <= 0", "y >= 0", "x + 2y < 8"], why: "This graph is shaded to the left of the y-axis. x ≥ 0 means the solutions are on the right side of the y-axis." }
+    ] }
+];
+
+// ---------- inequality parsing (linear only) ----------
+function L(x, y, c) { return { x, y, c }; }
+const isConst = a => Math.abs(a.x) < 1e-12 && Math.abs(a.y) < 1e-12;
+const add = (a, b) => L(a.x + b.x, a.y + b.y, a.c + b.c);
+const scale = (a, k) => L(a.x * k, a.y * k, a.c * k);
+function mul(a, b) { if (isConst(a)) return scale(b, a.c); if (isConst(b)) return scale(a, b.c); throw new Error("nonlinear"); }
+function div(a, b) { if (!isConst(b) || b.c === 0) throw new Error("bad division"); return scale(a, 1 / b.c); }
+function parseLinear(src) {
+  const toks = src.match(/\d*\.?\d+|[xy+\-*/()]/g) || [];
+  let p = 0;
+  const peek = () => toks[p], next = () => toks[p++];
+  const expr = () => { let a = term(); while (peek() === "+" || peek() === "-") { const op = next(); const b = term(); a = op === "+" ? add(a, b) : add(a, scale(b, -1)); } return a; };
+  const term = () => { let a = unary(); while (peek() !== undefined) { const t = peek(); if (t === "*" || t === "/") { next(); const b = unary(); a = t === "*" ? mul(a, b) : div(a, b); } else if (/^[\d.xy(]/.test(t)) a = mul(a, unary()); else break; } return a; };
+  const unary = () => { if (peek() === "-") { next(); return scale(unary(), -1); } if (peek() === "+") { next(); return unary(); } return primary(); };
+  const primary = () => { const k = next(); if (k === "x") return L(1, 0, 0); if (k === "y") return L(0, 1, 0); if (k === "(") { const e = expr(); next(); return e; } return L(0, 0, parseFloat(k)); };
+  return expr();
+}
+function parseIneq(raw) {
+  const s = raw.replace(/<=/g, "≤").replace(/>=/g, "≥");
+  const k = s.search(/[<>≤≥]/);
+  const op = s[k];
+  let f = add(parseLinear(s.slice(0, k)), scale(parseLinear(s.slice(k + 1)), -1));
+  if (op === "<" || op === "≤") f = scale(f, -1);
+  return { a: f.x, b: f.y, c: f.c, strict: op === "<" || op === ">" };
+}
+const value = (q, pt) => q.a * pt[0] + q.b * pt[1] + q.c;
+function clipPoly(poly, q) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const P = poly[i], Q = poly[(i + 1) % poly.length];
+    const vp = value(q, P), vq = value(q, Q);
+    if (vp >= 0) out.push(P);
+    if ((vp >= 0) !== (vq >= 0)) { const t = vp / (vp - vq); out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]); }
+  }
+  return out;
+}
+
+// ---------- drawing ----------
+function paint(canvas, qs) {
+  const ctx = canvas.getContext("2d");
+  const W = Math.max(150, Math.round(canvas.getBoundingClientRect().width));
+  const dpr = window.devicePixelRatio || 1;
+  if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(W * dpr); }
+  const cs = getComputedStyle(document.documentElement);
+  const v = n => cs.getPropertyValue(n).trim();
+  const X = x => (x + VIEW) / (2 * VIEW) * W;
+  const Y = y => (VIEW - y) / (2 * VIEW) * W;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = v("--surface");
+  ctx.fillRect(0, 0, W, W);
+  ctx.lineWidth = 1;
+  for (let k = -VIEW; k <= VIEW; k++) {
+    ctx.strokeStyle = k % 5 === 0 ? v("--grid-major") : v("--grid-minor");
+    ctx.beginPath(); ctx.moveTo(X(k) + .5, 0); ctx.lineTo(X(k) + .5, W); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, Y(k) + .5); ctx.lineTo(W, Y(k) + .5); ctx.stroke();
+  }
+  let region = [[-VIEW, -VIEW], [VIEW, -VIEW], [VIEW, VIEW], [-VIEW, VIEW]];
+  qs.forEach(q => { region = clipPoly(region, q); });
+  if (region.length > 2) {
+    ctx.beginPath();
+    region.forEach((p, j) => j ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])));
+    ctx.closePath(); ctx.fillStyle = v("--region"); ctx.fill();
+  }
+  ctx.strokeStyle = v("--axis"); ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), W); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, Y(0)); ctx.lineTo(W, Y(0)); ctx.stroke();
+  const fs = Math.max(9, Math.round(W / 34));
+  ctx.font = fs + 'px "Atkinson Hyperlegible", system-ui, sans-serif';
+  ctx.fillStyle = v("--muted");
+  for (let k = -8; k <= 8; k += 2) {
+    if (k === 0) continue;
+    const t = k < 0 ? "−" + Math.abs(k) : String(k);
+    ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(t, X(k), Y(0) + 3);
+    ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(t, X(0) - 4, Y(k));
+  }
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, W, W); ctx.clip();
+  qs.forEach(q => {
+    const n2 = q.a * q.a + q.b * q.b, len = Math.sqrt(n2);
+    const p0 = [-q.a * q.c / n2, -q.b * q.c / n2], d = [-q.b / len, q.a / len], T = VIEW * 4;
+    ctx.strokeStyle = v("--boundary");
+    ctx.lineWidth = Math.max(2.5, W / 110);
+    ctx.setLineDash(q.strict ? [Math.max(7, W / 32), Math.max(5, W / 45)] : []);
+    ctx.beginPath();
+    ctx.moveTo(X(p0[0] - T * d[0]), Y(p0[1] - T * d[1]));
+    ctx.lineTo(X(p0[0] + T * d[0]), Y(p0[1] + T * d[1]));
+    ctx.stroke();
+  });
+  ctx.restore();
+  ctx.setLineDash([]);
+}
+
+// ---------- quiz ----------
+(function () {
+  const $ = id => document.getElementById(id);
+  const state = { i: 0, picked: null, checked: false, answers: [] };
+  const canvases = [];
+
+  function renderProgress() {
+    const ol = $("progress");
+    ol.innerHTML = "";
+    QUESTIONS.forEach((q, i) => {
+      const li = document.createElement("li");
+      li.textContent = i + 1;
+      const a = state.answers[i];
+      let label = "Question " + (i + 1);
+      if (a !== undefined) { const ok = a === q.correct; li.classList.add(ok ? "right" : "wrong"); label += ok ? ", correct" : ", incorrect"; }
+      else if (i === state.i) { li.classList.add("now"); label += ", current"; }
+      li.setAttribute("aria-label", label);
+      ol.appendChild(li);
+    });
+  }
+
+  function renderQuestion() {
+    const q = QUESTIONS[state.i];
+    state.picked = null; state.checked = false;
+    $("qKicker").textContent = "Question " + (state.i + 1) + " of " + QUESTIONS.length;
+    $("system").innerHTML = q.system.map(s => "<li>" + s + "</li>").join("");
+    $("feedback").hidden = true;
+    $("checkBtn").hidden = false; $("checkBtn").disabled = true;
+    $("nextBtn").hidden = true;
+    const wrap = $("choices");
+    wrap.innerHTML = "";
+    canvases.length = 0;
+    q.choices.forEach((c, j) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "choice";
+      b.setAttribute("aria-pressed", "false");
+      b.setAttribute("aria-label", "Graph " + LETTERS[j]);
+      b.innerHTML = '<canvas aria-hidden="true"></canvas><span class="tag"><span>' + LETTERS[j] + '</span><span class="mark"></span></span>';
+      b.addEventListener("click", () => pick(j));
+      wrap.appendChild(b);
+      const cv = b.querySelector("canvas");
+      canvases.push({ cv, qs: c.ineqs.map(parseIneq) });
+      ro && ro.observe(cv);
+    });
+    renderProgress();
+    drawAll();
+  }
+
+  function drawAll() { canvases.forEach(o => paint(o.cv, o.qs)); }
+
+  function pick(j) {
+    if (state.checked) return;
+    state.picked = j;
+    document.querySelectorAll(".choice").forEach((b, k) => b.setAttribute("aria-pressed", k === j ? "true" : "false"));
+    $("checkBtn").disabled = false;
+  }
+
+  function check() {
+    if (state.picked === null || state.checked) return;
+    const q = QUESTIONS[state.i];
+    state.checked = true;
+    state.answers[state.i] = state.picked;
+    const btns = document.querySelectorAll(".choice");
+    btns.forEach(b => { b.disabled = true; });
+    btns[q.correct].classList.add("correct");
+    btns[q.correct].querySelector(".mark").textContent = "Correct graph";
+    const fb = $("feedback");
+    fb.hidden = false;
+    if (state.picked === q.correct) {
+      fb.className = "note ok";
+      fb.innerHTML = "<p><b>Correct, it’s graph " + LETTERS[q.correct] + ".</b></p><p>" + q.explain + "</p>";
+    } else {
+      btns[state.picked].classList.add("incorrect");
+      btns[state.picked].querySelector(".mark").textContent = "Your choice";
+      fb.className = "note bad";
+      fb.innerHTML = "<p><b>Not quite. You picked graph " + LETTERS[state.picked] + ".</b></p><p>" +
+        q.choices[state.picked].why + "</p><p>The correct graph is " + LETTERS[q.correct] + ". " + q.explain + "</p>";
+    }
+    $("checkBtn").hidden = true;
+    $("nextBtn").hidden = false;
+    $("nextBtn").textContent = state.i === QUESTIONS.length - 1 ? "See my score" : "Next question";
+    $("nextBtn").focus();
+    renderProgress();
+  }
+
+  function showResults() {
+    const right = QUESTIONS.filter((q, i) => state.answers[i] === q.correct).length;
+    $("quiz").hidden = true;
+    $("results").hidden = false;
+    $("score").textContent = right + " of " + QUESTIONS.length;
+    $("resTitle").textContent = right === QUESTIONS.length ? "You matched every system." :
+      right >= QUESTIONS.length - 1 ? "Nice work. Look over the one you missed." : "Look over the ones you missed, then try again.";
+    $("review").innerHTML = QUESTIONS.map((q, i) => {
+      const a = state.answers[i], ok = a === q.correct;
+      return '<li class="' + (ok ? "right" : "wrong") + '"><b>Question ' + (i + 1) + ": " + q.system.join(", ") + "</b>" +
+        (ok ? "<span>Correct (graph " + LETTERS[q.correct] + ").</span>"
+            : "<span>You picked " + LETTERS[a] + "; the answer was " + LETTERS[q.correct] + ". " + q.choices[a].why + "</span>") + "</li>";
+    }).join("");
+    state.i = QUESTIONS.length;
+    renderProgress();
+    $("score").focus && $("results").scrollIntoView();
+  }
+
+  $("checkBtn").addEventListener("click", check);
+  $("nextBtn").addEventListener("click", () => {
+    if (state.i === QUESTIONS.length - 1) { showResults(); return; }
+    state.i++;
+    renderQuestion();
+    window.scrollTo({ top: 0 });
+  });
+  $("againBtn").addEventListener("click", () => {
+    state.i = 0; state.answers = [];
+    $("results").hidden = true; $("quiz").hidden = false;
+    renderQuestion();
+  });
+
+  const ro = window.ResizeObserver ? new ResizeObserver(() => drawAll()) : null;
+  if (!ro) window.addEventListener("resize", drawAll);
+  if (window.matchMedia) { const mq = matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", drawAll); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+
+  renderQuestion();
+})();
+</script>
+</body>
+</html>
