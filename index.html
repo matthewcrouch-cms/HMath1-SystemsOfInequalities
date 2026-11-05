@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Systems of Linear Inequalities | Honors Math 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#EAF2F9; --surface:#FFFFFF; --ink:#13294B; --muted:#4A5D78; --line:#C9D8E8;
+  --carolina:#4B9CD3; --orange:#F56600; --region:rgba(75,156,211,.40); --grid:#DCE7F2;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+    --carolina:#5BAEE6; --orange:#FF7A1F; --region:rgba(91,174,230,.42); --grid:#22364F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+  --carolina:#5BAEE6; --orange:#FF7A1F; --region:rgba(91,174,230,.42); --grid:#22364F;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:18px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding:44px 22px 56px}
+.hero{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;margin-bottom:34px}
+@media (max-width:620px){.hero{grid-template-columns:1fr}.hero svg{display:none}}
+.course{margin:0 0 6px;color:var(--muted);font-weight:700}
+h1{margin:0;font-size:clamp(2rem,5.4vw,3rem);line-height:1.05;letter-spacing:-.015em}
+.lede{margin:12px 0 0;color:var(--muted);max-width:46ch}
+ol{list-style:none;margin:0;padding:0;display:grid;gap:14px;counter-reset:part}
+li a{display:grid;grid-template-columns:56px 1fr auto;gap:18px;align-items:center;padding:18px 20px;
+  background:var(--surface);border:2px solid var(--line);border-radius:16px;color:inherit;text-decoration:none;
+  transition:border-color .15s}
+li a:hover{border-color:var(--carolina)}
+.num{width:56px;height:56px;border-radius:50%;border:3px solid var(--carolina);display:flex;align-items:center;
+  justify-content:center;font-size:1.5rem;font-weight:700;color:var(--ink)}
+h2{margin:0;font-size:1.3rem;line-height:1.2}
+li p{margin:4px 0 0;color:var(--muted);font-size:1rem}
+.go{font-weight:700;color:var(--orange);white-space:nowrap}
+@media (max-width:620px){li a{grid-template-columns:44px 1fr}.num{width:44px;height:44px;font-size:1.2rem}.go{grid-column:2}}
+.foot{margin-top:28px;color:var(--muted);font-size:.95rem}
+:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <p class="course">Honors Math 1</p>
+      <h1>Systems of Linear Inequalities</h1>
+      <p class="lede">Work through the three parts in order. Each one builds on the one before it.</p>
+    </div>
+    <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true">
+      <g stroke="var(--grid)" stroke-width="1">
+        <path d="M15 0V150M30 0V150M45 0V150M60 0V150M90 0V150M105 0V150M120 0V150M135 0V150"/>
+        <path d="M0 15H150M0 30H150M0 45H150M0 60H150M0 90H150M0 105H150M0 120H150M0 135H150"/>
+      </g>
+      <polygon points="0,0 0,150 30,150 85,40 150,105 150,0" fill="var(--region)"/>
+      <path d="M75 0V150M0 75H150" stroke="var(--muted)" stroke-width="1.5"/>
+      <path d="M22.5 165 L97.5 15" stroke="var(--orange)" stroke-width="3.5" stroke-dasharray="9 7"/>
+      <path d="M40 -5 L160 115" stroke="var(--ink)" stroke-width="3.5"/>
+    </svg>
+  </div>
+
+  <ol>
+    <li>
+      <a href="points-in-points-out.html">
+        <span class="num" aria-hidden="true">1</span>
+        <span><h2>Points In, Points Out</h2><p>Write inequalities that keep every green point in and every red point out.</p></span>
+        <span class="go">Start part 1</span>
+      </a>
+    </li>
+    <li>
+      <a href="match-the-system.html">
+        <span class="num" aria-hidden="true">2</span>
+        <span><h2>Match the System</h2><p>Pick the graph that matches each system. Four questions, scored at the end.</p></span>
+        <span class="go">Start part 2</span>
+      </a>
+    </li>
+    <li>
+      <a href="write-the-constraints.html">
+        <span class="num" aria-hidden="true">3</span>
+        <span><h2>Write the Constraints</h2><p>Turn real situations into a system, graph it, and decide which combinations work.</p></span>
+        <span class="go">Start part 3</span>
+      </a>
+    </li>
+  </ol>
+
+  <p class="foot">Parts 1 and 3 save your work on this device, so you can come back and pick up where you left off.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Write the Constraints | Systems of Inequalities</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#EAF2F9; --surface:#FFFFFF; --ink:#13294B; --muted:#4A5D78; --line:#C9D8E8;
+  --carolina:#4B9CD3; --orange:#F56600; --btn:#C75300; --btn-ink:#FFFFFF;
+  --in:#1E8A4C; --out:#C8102E; --pt:#13294B;
+  --grid-minor:#EDF3F9; --grid-major:#D3E1EE; --axis:#13294B;
+  --region:rgba(75,156,211,.40);
+  --row1:#F56600; --row2:#6A3FB5;
+  --ok-bg:#E3F3EA; --bad-bg:#FCEBEE; --info-bg:#FFF1E6;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+    --carolina:#5BAEE6; --orange:#FF7A1F; --btn:#E36A12; --btn-ink:#FFFFFF;
+    --in:#3CC476; --out:#FF5C70; --pt:#F2F6FB;
+    --grid-minor:#1A2B42; --grid-major:#2B4565; --axis:#DCE7F5;
+    --region:rgba(91,174,230,.42);
+    --row1:#FF8A3D; --row2:#B793F5;
+    --ok-bg:#16382A; --bad-bg:#3C1C25; --info-bg:#3A2716;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0E1A2B; --surface:#15253B; --ink:#E6EEF8; --muted:#A9B9CF; --line:#2C4262;
+  --carolina:#5BAEE6; --orange:#FF7A1F; --btn:#E36A12; --btn-ink:#FFFFFF;
+  --in:#3CC476; --out:#FF5C70; --pt:#F2F6FB;
+  --grid-minor:#1A2B42; --grid-major:#2B4565; --axis:#DCE7F5;
+  --region:rgba(91,174,230,.42);
+  --row1:#FF8A3D; --row2:#B793F5;
+  --ok-bg:#16382A; --bad-bg:#3C1C25; --info-bg:#3A2716;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--page);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:17px;line-height:1.5}
+.wrap{max-width:1140px;margin:0 auto;padding:22px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 28px;margin-bottom:20px}
+h1{font-size:clamp(1.7rem,3.4vw,2.4rem);line-height:1.08;margin:0;letter-spacing:-.01em}
+.sub{margin:6px 0 0;color:var(--muted)}
+.levels{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.levels button{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--surface);
+  color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.levels button.solved{background:var(--carolina);border-color:var(--carolina);color:#fff}
+.levels button[aria-current="true"]{box-shadow:0 0 0 3px var(--page),0 0 0 5px var(--orange)}
+main{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,1fr);gap:28px;align-items:start}
+@media (max-width:860px){main{grid-template-columns:1fr}}
+.board{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px;position:sticky;top:12px}
+@media (max-width:860px){.board{position:static}}
+canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:8px}
+.kicker{margin:0;color:var(--muted);font-weight:700}
+h2{margin:2px 0 10px;font-size:1.55rem;line-height:1.15}
+h3{margin:26px 0 6px;font-size:1.2rem}
+.story{margin:0 0 12px;max-width:62ch}
+.vars{margin:0 0 6px;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.vars p{margin:0}
+.rows{display:grid;gap:12px;margin:16px 0 10px}
+.row{display:grid;grid-template-columns:40px 1fr;column-gap:10px;align-items:center}
+.row label{display:flex;align-items:center;justify-content:center;height:100%}
+.row input{font:inherit;font-size:1.2rem;padding:10px 12px;border:2px solid var(--line);border-radius:10px;
+  background:var(--surface);color:var(--ink);width:100%}
+.row input::placeholder{color:var(--muted);opacity:.7}
+.row input:focus{outline:none;border-color:var(--carolina);box-shadow:0 0 0 3px rgba(75,156,211,.35)}
+.row input.err{border-color:var(--out)}
+.row input.good{border-color:var(--in)}
+.row input:disabled{opacity:1;color:var(--ink)}
+.row .msg{grid-column:2;font-size:.92rem;color:var(--out);margin-top:4px}
+.row .msg:empty{display:none}
+.given{font-size:.95rem;color:var(--muted);margin:2px 0 0}
+.tools{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:12px}
+.symbols{display:flex;gap:6px}
+.symbols button{font:inherit;font-size:1.25rem;width:48px;height:42px;border:2px solid var(--line);border-radius:8px;
+  background:var(--surface);color:var(--ink);cursor:pointer}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{font:inherit;font-weight:700;padding:11px 18px;border-radius:10px;border:2px solid transparent;cursor:pointer}
+.btn.primary{background:var(--btn);color:var(--btn-ink)}
+.btn.secondary{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.note{margin-top:14px;padding:12px 14px;border-radius:10px;border-left:5px solid}
+.note p{margin:0}
+.note p+p,.note ul{margin-top:6px}
+.note ul{margin-bottom:0;padding-left:20px}
+.note.ok{background:var(--ok-bg);border-color:var(--in)}
+.note.bad{background:var(--bad-bg);border-color:var(--out)}
+.note.hint{background:var(--info-bg);border-color:var(--orange)}
+.pq{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.pq p{margin:0 0 10px}
+.yn{display:flex;gap:8px}
+.yn .btn{min-width:80px}
+.yn .btn[aria-pressed="true"]{opacity:1;border-color:var(--carolina);background:var(--carolina);color:#fff}
+.done{max-width:720px}
+.done ul{padding-left:20px}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Write the Constraints</h1>
+      <p class="sub">Systems of linear inequalities, part 3 of 3</p>
+    </div>
+    <nav aria-label="Scenarios"><ul class="levels" id="levels"></ul></nav>
+  </header>
+
+  <main id="app">
+    <section class="board" aria-label="Graph">
+      <canvas id="plane" role="img" aria-label="Graph of your constraints"></canvas>
+    </section>
+
+    <section aria-labelledby="sTitle">
+      <p class="kicker" id="sKicker">Scenario 1 of 3</p>
+      <h2 id="sTitle"></h2>
+      <p class="story" id="story"></p>
+      <div class="vars" id="vars"></div>
+
+      <div class="rows" id="rows"></div>
+      <p class="given">Amounts can’t be negative, so x ≥ 0 and y ≥ 0 are already part of the system. The graph only shows the first quadrant.</p>
+
+      <div class="tools">
+        <div class="symbols" role="group" aria-label="Insert a symbol">
+          <button type="button" data-sym="<">&lt;</button>
+          <button type="button" data-sym=">">&gt;</button>
+          <button type="button" data-sym="≤">≤</button>
+          <button type="button" data-sym="≥">≥</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="checkBtn" type="button">Check my constraints</button>
+        <button class="btn secondary" id="hintBtn" type="button">Show hint</button>
+      </div>
+      <div class="note hint" id="hint" hidden></div>
+      <div class="note" id="feedback" hidden aria-live="polite"></div>
+
+      <div id="usePart" hidden>
+        <h3>Use your graph</h3>
+        <div id="pqs"></div>
+        <div class="actions"><button class="btn primary" id="nextBtn" type="button" hidden>Next scenario</button></div>
+      </div>
+    </section>
+  </main>
+
+  <section id="finished" class="done" hidden aria-labelledby="doneTitle">
+    <p class="kicker">All done</p>
+    <h2 id="doneTitle">You wrote a system for every scenario.</h2>
+    <ul id="doneList"></ul>
+    <div class="actions"><button class="btn secondary" id="againBtn" type="button">Start over</button></div>
+  </section>
+</div>
+
+<script>
+const SCENARIOS = [
+  { title: "Concession stand",
+    story: "The booster club runs the concession stand at Friday’s Wolves football game. Hot dogs sell for $3 and drinks sell for $2. The club wants to bring in at least $600 in sales. The stand only has enough supplies to sell at most 250 items in all.",
+    x: "the number of hot dogs sold", y: "the number of drinks sold",
+    xAxis: "Hot dogs sold (x)", yAxis: "Drinks sold (y)",
+    view: { xmax: 300, ymax: 320, step: 50 },
+    targets: [
+      { ineq: "3x + 2y >= 600", show: "3x + 2y ≥ 600", label: "sales goal", phrase: "at least $600", sym: "≥" },
+      { ineq: "x + y <= 250", show: "x + y ≤ 250", label: "item limit", phrase: "at most 250 items", sym: "≤" }
+    ],
+    hint: "Each hot dog brings in $3, so x hot dogs bring in 3x dollars. Write one inequality about the money and one about the number of items.",
+    points: [
+      { pt: [150, 80], q: "Can the club sell 150 hot dogs and 80 drinks and meet both conditions?", ans: true,
+        why: "Sales are 3(150) + 2(80) = $610, which is at least $600. Items are 150 + 80 = 230, which is no more than 250. The point is in the shaded region." },
+      { pt: [60, 180], q: "Can the club sell 60 hot dogs and 180 drinks and meet both conditions?", ans: false,
+        why: "Items are 60 + 180 = 240, which is fine, but sales are 3(60) + 2(180) = $540, which is less than $600. The point is below the sales line." }
+    ] },
+  { title: "Club T-shirts",
+    story: "The math club is ordering T-shirts. Short-sleeve shirts cost the club $8 each and long-sleeve shirts cost $12 each. The club can spend at most $480, and it needs at least 30 shirts so every member gets one.",
+    x: "the number of short-sleeve shirts", y: "the number of long-sleeve shirts",
+    xAxis: "Short-sleeve shirts (x)", yAxis: "Long-sleeve shirts (y)",
+    view: { xmax: 70, ymax: 50, step: 10 },
+    targets: [
+      { ineq: "8x + 12y <= 480", show: "8x + 12y ≤ 480", label: "budget", phrase: "at most $480", sym: "≤" },
+      { ineq: "x + y >= 30", show: "x + y ≥ 30", label: "shirt count", phrase: "at least 30 shirts", sym: "≥" }
+    ],
+    hint: "Short-sleeve shirts cost $8 each, so x of them cost 8x dollars. Write one inequality about the cost and one about the number of shirts.",
+    points: [
+      { pt: [20, 20], q: "Can the club order 20 short-sleeve and 20 long-sleeve shirts?", ans: true,
+        why: "The cost is 8(20) + 12(20) = $400, which is within $480. The club gets 20 + 20 = 40 shirts, which is at least 30." },
+      { pt: [10, 35], q: "Can the club order 10 short-sleeve and 35 long-sleeve shirts?", ans: false,
+        why: "That’s 45 shirts, which is enough, but the cost is 8(10) + 12(35) = $500, which is over the $480 budget." }
+    ] },
+  { title: "Two jobs",
+    story: "Jordan has two part-time jobs. Babysitting pays $12 per hour, and working at the grocery store pays $15 per hour. This month Jordan wants to earn more than $300 but can work no more than 25 hours in all.",
+    x: "the hours spent babysitting", y: "the hours worked at the grocery store",
+    xAxis: "Babysitting hours (x)", yAxis: "Grocery store hours (y)",
+    view: { xmax: 30, ymax: 30, step: 5 },
+    targets: [
+      { ineq: "12x + 15y > 300", show: "12x + 15y > 300", label: "earnings goal", phrase: "more than $300", sym: ">" },
+      { ineq: "x + y <= 25", show: "x + y ≤ 25", label: "hour limit", phrase: "no more than 25 hours", sym: "≤" }
+    ],
+    hint: "Babysitting pays $12 per hour, so x hours of babysitting earn 12x dollars. Watch the wording: “more than” and “no more than” lead to different symbols.",
+    points: [
+      { pt: [8, 14], q: "Does babysitting 8 hours and working 14 hours at the grocery store meet both of Jordan’s conditions?", ans: true,
+        why: "Jordan earns 12(8) + 15(14) = $306, which is more than $300, and works 8 + 14 = 22 hours, which is no more than 25." },
+      { pt: [10, 12], q: "Does babysitting 10 hours and working 12 hours at the grocery store meet both of Jordan’s conditions?", ans: false,
+        why: "Jordan earns 12(10) + 15(12) = $300 exactly. The goal is more than $300, so this point sits on the dashed line and isn’t a solution." }
+    ] }
+];
+
+// ---------- parsing ----------
+const EPS = 1e-9;
+function L(x, y, c) { return { x, y, c }; }
+const isConst = a => Math.abs(a.x) < 1e-12 && Math.abs(a.y) < 1e-12;
+const add = (a, b) => L(a.x + b.x, a.y + b.y, a.c + b.c);
+const scale = (a, k) => L(a.x * k, a.y * k, a.c * k);
+function mul(a, b) {
+  if (isConst(a)) return scale(b, a.c);
+  if (isConst(b)) return scale(a, b.c);
+  throw new Error("Multiplying x and y together isn’t linear. Each term should have just one x or one y.");
+}
+function div(a, b) {
+  if (!isConst(b)) throw new Error("Dividing by x or y isn’t linear.");
+  if (b.c === 0) throw new Error("You can’t divide by zero.");
+  return scale(a, 1 / b.c);
+}
+function parseLinear(src) {
+  const toks = [];
+  let i = 0;
+  while (i < src.length) {
+    const ch = src[i];
+    if (/\s|\$|,/.test(ch)) { i++; continue; }
+    if (/[0-9.]/.test(ch)) {
+      let j = i;
+      while (j < src.length && /[0-9.]/.test(src[j])) j++;
+      const s = src.slice(i, j);
+      if (!/^(\d+\.?\d*|\.\d+)$/.test(s)) throw new Error("“" + s + "” isn’t a number I can read.");
+      toks.push({ t: "num", v: parseFloat(s), s });
+      i = j; continue;
+    }
+    if (ch === "x" || ch === "y" || "+-*/()".includes(ch)) { toks.push({ t: ch, s: ch }); i++; continue; }
+    if (/[a-z]/.test(ch)) throw new Error("Use x and y as your variables. “" + ch + "” isn’t one of them.");
+    if (ch === "^") throw new Error("Exponents don’t belong in a linear inequality.");
+    throw new Error("I don’t know what “" + ch + "” means here.");
+  }
+  if (!toks.length) throw new Error("Both sides of the symbol need something.");
+  let p = 0;
+  const peek = () => toks[p], next = () => toks[p++];
+  function expr() { let a = term(); while (peek() && (peek().t === "+" || peek().t === "-")) { const op = next().t; const b = term(); a = op === "+" ? add(a, b) : add(a, scale(b, -1)); } return a; }
+  function term() {
+    let a = unary();
+    while (peek()) {
+      const t = peek().t;
+      if (t === "*" || t === "/") { next(); const b = unary(); a = t === "*" ? mul(a, b) : div(a, b); }
+      else if (t === "num" || t === "x" || t === "y" || t === "(") a = mul(a, unary());
+      else break;
+    }
+    return a;
+  }
+  function unary() {
+    const k = peek();
+    if (!k) throw new Error("Something is missing at the end.");
+    if (k.t === "-") { next(); return scale(unary(), -1); }
+    if (k.t === "+") { next(); return unary(); }
+    return primary();
+  }
+  function primary() {
+    const k = next();
+    if (!k) throw new Error("Something is missing at the end.");
+    if (k.t === "num") return L(0, 0, k.v);
+    if (k.t === "x") return L(1, 0, 0);
+    if (k.t === "y") return L(0, 1, 0);
+    if (k.t === "(") { const e = expr(); if (!peek() || peek().t !== ")") throw new Error("A closing parenthesis is missing."); next(); return e; }
+    throw new Error("“" + k.s + "” is in an unexpected spot.");
+  }
+  const r = expr();
+  if (p < toks.length) throw new Error("“" + toks[p].s + "” is in an unexpected spot.");
+  return r;
+}
+function parseIneq(raw) {
+  const s = raw.toLowerCase().replace(/[−–—]/g, "-").replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥").replace(/[×·]/g, "*");
+  const syms = s.match(/[<>≤≥]/g) || [];
+  if (!syms.length) {
+    if (s.includes("=")) throw new Error("Use <, >, ≤, or ≥ instead of =.");
+    throw new Error("Add an inequality symbol: <, >, ≤, or ≥.");
+  }
+  if (syms.length > 1) throw new Error("Use just one inequality symbol in each row.");
+  if (s.includes("=")) throw new Error("Use <, >, ≤, or ≥ without an extra = sign.");
+  const k = s.search(/[<>≤≥]/), op = s[k];
+  const left = s.slice(0, k), right = s.slice(k + 1);
+  if (!left.trim() || !right.trim()) throw new Error("Both sides of the symbol need something.");
+  let f = add(parseLinear(left), scale(parseLinear(right), -1));
+  if (op === "<" || op === "≤") f = scale(f, -1);
+  if (isConst(f)) throw new Error("Your inequality needs an x or a y.");
+  return { a: f.x, b: f.y, c: f.c, strict: op === "<" || op === ">" };
+}
+const value = (q, pt) => q.a * pt[0] + q.b * pt[1] + q.c;
+function satisfies(q, pt) { const v = value(q, pt); return Math.abs(v) < EPS ? !q.strict : v > 0; }
+function clipPoly(poly, q) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const P = poly[i], Q = poly[(i + 1) % poly.length];
+    const vp = value(q, P), vq = value(q, Q);
+    if (vp >= 0) out.push(P);
+    if ((vp >= 0) !== (vq >= 0)) { const t = vp / (vp - vq); out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]); }
+  }
+  return out;
+}
+function unit(q) { const n = Math.hypot(q.a, q.b); return [q.a / n, q.b / n, q.c / n]; }
+const near = (u, v, tol) => u.every((k, i) => Math.abs(k - v[i]) < (tol || 1e-6));
+
+// How does a student's inequality compare to a target? Returns a code.
+function compare(s, t) {
+  const us = unit(s), ut = unit(t);
+  if (near(us, ut)) return s.strict === t.strict ? "match" : "strict";
+  if (near(us, ut.map(k => -k))) return "flip";
+  const swapped = unit({ a: s.b, b: s.a, c: s.c });
+  if (near(swapped, ut) || near(swapped, ut.map(k => -k))) return "swap";
+  if (near(us.slice(0, 2), ut.slice(0, 2)) || near(us.slice(0, 2), ut.slice(0, 2).map(k => -k))) return "constant";
+  return "none";
+}
+</script>
+
+<script>
+(function () {
+  const KEY = "sys-ineq-part3-v1";
+  const ROW_VARS = ["--row1", "--row2"];
+  const $ = id => document.getElementById(id);
+  const canvas = $("plane");
+  const state = { s: 0, done: new Set(), answers: {}, solved: {}, pq: {}, lastInput: 0 };
+  const rows = [];
+
+  function load() {
+    try {
+      const d = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (d) { state.s = Math.min(d.s | 0, SCENARIOS.length - 1); state.done = new Set(d.done || []); state.answers = d.answers || {}; state.solved = d.solved || {}; state.pq = d.pq || {}; }
+    } catch (e) { }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify({ s: state.s, done: [...state.done], answers: state.answers, solved: state.solved, pq: state.pq })); } catch (e) { }
+  }
+
+  const fmt = n => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+
+  function buildStrip() {
+    const ul = $("levels");
+    ul.innerHTML = "";
+    SCENARIOS.forEach((sc, i) => {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = i + 1;
+      b.setAttribute("aria-label", "Scenario " + (i + 1) + ": " + sc.title + (state.done.has(i) ? ", finished" : ""));
+      if (state.done.has(i)) b.classList.add("solved");
+      if (i === state.s && $("finished").hidden) b.setAttribute("aria-current", "true");
+      b.addEventListener("click", () => { state.s = i; save(); showApp(); render(); });
+      li.appendChild(b); ul.appendChild(li);
+    });
+  }
+
+  function swatch(i, strict) {
+    return '<svg width="34" height="14" aria-hidden="true"><line x1="2" y1="7" x2="32" y2="7" stroke="var(' + ROW_VARS[i] +
+      ')" stroke-width="3.5" stroke-linecap="round"' + (strict ? ' stroke-dasharray="6 5"' : "") + "/></svg>";
+  }
+
+  function render() {
+    const sc = SCENARIOS[state.s];
+    $("sKicker").textContent = "Scenario " + (state.s + 1) + " of " + SCENARIOS.length;
+    $("sTitle").textContent = sc.title;
+    $("story").textContent = sc.story;
+    $("vars").innerHTML = "<p>Let <b>x</b> = " + sc.x + ".</p><p>Let <b>y</b> = " + sc.y + ".</p>";
+    $("hint").hidden = true; $("hint").textContent = sc.hint; $("hintBtn").textContent = "Show hint";
+    $("feedback").hidden = true;
+
+    const saved = state.answers[state.s] || [];
+    const solved = !!state.solved[state.s];
+    const wrap = $("rows");
+    wrap.innerHTML = ""; rows.length = 0;
+    sc.targets.forEach((t, i) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = '<label for="c' + i + '" class="sw">' + swatch(i, false) + '<span class="sr">Constraint ' + (i + 1) + "</span></label>" +
+        '<input id="c' + i + '" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Constraint ' + (i + 1) + '">' +
+        '<div class="msg" id="m' + i + '"></div>';
+      wrap.appendChild(row);
+      const input = row.querySelector("input");
+      input.value = saved[i] || "";
+      input.disabled = solved;
+      rows.push({ input, label: row.querySelector(".sw"), msg: row.querySelector(".msg"), touched: false, q: null, err: null });
+      input.addEventListener("focus", () => { state.lastInput = i; });
+      input.addEventListener("input", () => {
+        const v = input.value;
+        if (/<=|>=|=<|=>/.test(v)) {
+          const pos = input.selectionStart, nv = v.replace(/<=|=</g, "≤").replace(/>=|=>/g, "≥");
+          input.value = nv; input.setSelectionRange(pos - (v.length - nv.length), pos - (v.length - nv.length));
+        }
+        rows[i].touched = false; $("feedback").hidden = true; update();
+      });
+      input.addEventListener("blur", () => { if (input.value.trim()) { rows[i].touched = true; update(); } });
+      input.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); check(); } });
+    });
+    $("checkBtn").disabled = solved;
+    if (solved) {
+      rows.forEach(r => r.input.classList.add("good"));
+      $("feedback").hidden = false; $("feedback").className = "note ok";
+      $("feedback").innerHTML = "<p><b>Both constraints are correct.</b></p>";
+    }
+    renderPQ();
+    buildStrip();
+    update();
+  }
+
+  function liveQs() { return rows.map((r, i) => r.q ? { q: r.q, i } : null).filter(Boolean); }
+
+  function update() {
+    rows.forEach((r, i) => {
+      r.q = null; r.err = null;
+      if (r.input.value.trim()) { try { r.q = parseIneq(r.input.value); } catch (e) { r.err = e.message; } }
+      const show = r.err && r.touched;
+      r.msg.textContent = show ? r.err : "";
+      r.input.classList.toggle("err", !!show);
+      r.label.innerHTML = swatch(i, r.q ? r.q.strict : false) + '<span class="sr">Constraint ' + (i + 1) + "</span>";
+    });
+    state.answers[state.s] = rows.map(r => r.input.value);
+    save();
+    draw();
+  }
+
+  function check() {
+    const sc = SCENARIOS[state.s];
+    rows.forEach(r => { r.touched = true; });
+    update();
+    const fb = $("feedback");
+    fb.hidden = false;
+    if (rows.some(r => !r.input.value.trim())) {
+      fb.className = "note bad"; fb.innerHTML = "<p>Write an inequality in each row. This situation has two conditions.</p>"; return;
+    }
+    if (rows.some(r => r.err)) { fb.className = "note bad"; fb.innerHTML = "<p>Fix the rows marked in red so they can be graphed.</p>"; return; }
+
+    const targets = sc.targets.map(t => Object.assign({ q: parseIneq(t.ineq) }, t));
+    const used = new Set();
+    const results = rows.map(() => null);
+    // first pass: exact matches
+    rows.forEach((r, i) => {
+      const j = targets.findIndex((t, k) => !used.has(k) && compare(r.q, t.q) === "match");
+      if (j >= 0) { used.add(j); results[i] = { code: "match", t: targets[j] }; }
+    });
+    const rank = ["strict", "flip", "swap", "constant"];
+    rows.forEach((r, i) => {
+      if (results[i]) return;
+      if (targets.some(t => compare(r.q, t.q) === "match")) { results[i] = { code: "repeat", t: targets.find(t => compare(r.q, t.q) === "match") }; return; }
+      let best = null;
+      targets.forEach((t, k) => {
+        if (used.has(k)) return;
+        const c = compare(r.q, t.q);
+        if (c !== "none" && (!best || rank.indexOf(c) < rank.indexOf(best.code))) best = { code: c, t, k };
+      });
+      results[i] = best || { code: "none" };
+    });
+
+    rows.forEach((r, i) => r.input.classList.toggle("good", results[i].code === "match"));
+    if (results.every(x => x.code === "match")) {
+      state.solved[state.s] = true; save();
+      rows.forEach(r => { r.input.disabled = true; });
+      $("checkBtn").disabled = true;
+      fb.className = "note ok";
+      fb.innerHTML = "<p><b>Both constraints are correct.</b> The shaded region shows every combination that meets both conditions.</p>";
+      renderPQ();
+      $("usePart").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
+    const items = results.map((x, i) => {
+      const n = "Row " + (i + 1);
+      if (x.code === "match") return "<li>" + n + " is correct. It’s the " + x.t.label + ".</li>";
+      if (x.code === "repeat") return "<li>" + n + " repeats the " + x.t.label + ". The other condition is still missing.</li>";
+      if (x.code === "strict") return "<li>" + n + " is close to the " + x.t.label + ". Check the symbol: “" + x.t.phrase + "” means " + x.t.sym +
+        (x.t.sym === "<" || x.t.sym === ">" ? ", which leaves out the boundary." : ", which includes the boundary.") + "</li>";
+      if (x.code === "flip") return "<li>" + n + " has the right boundary line for the " + x.t.label + ", but the symbol points the wrong way. “" + x.t.phrase + "” means " + x.t.sym + ".</li>";
+      if (x.code === "swap") return "<li>" + n + " looks like the " + x.t.label + ", but the numbers are attached to the wrong variables. Remember, x is " + sc.x + " and y is " + sc.y + ".</li>";
+      if (x.code === "constant") return "<li>" + n + " has the right x and y parts for the " + x.t.label + ". Check the number on the other side of the symbol.</li>";
+      return "<li>" + n + " doesn’t match either condition yet. Reread the situation and check which number goes with x and which goes with y.</li>";
+    });
+    fb.className = "note bad";
+    fb.innerHTML = "<p>Not yet.</p><ul>" + items.join("") + "</ul>";
+  }
+
+  function renderPQ() {
+    const sc = SCENARIOS[state.s];
+    const solved = !!state.solved[state.s];
+    $("usePart").hidden = !solved;
+    const box = $("pqs");
+    box.innerHTML = "";
+    if (!solved) return;
+    const ans = state.pq[state.s] || {};
+    sc.points.forEach((p, k) => {
+      const div = document.createElement("div");
+      div.className = "pq";
+      const a = ans[k];
+      div.innerHTML = "<p><b>" + p.q + "</b> The point (" + p.pt[0] + ", " + p.pt[1] + ") is marked on the graph.</p>" +
+        '<div class="yn"><button class="btn secondary" type="button" data-v="yes">Yes</button><button class="btn secondary" type="button" data-v="no">No</button></div>' +
+        '<div class="note" hidden></div>';
+      const note = div.querySelector(".note");
+      const showResult = val => {
+        const ok = (val === "yes") === p.ans;
+        note.hidden = false;
+        note.className = "note " + (ok ? "ok" : "bad");
+        note.innerHTML = "<p><b>" + (ok ? "Right." : "Not quite. The answer is " + (p.ans ? "yes" : "no") + ".") + "</b> " + p.why + "</p>";
+        div.querySelectorAll(".yn button").forEach(b => { b.disabled = true; if (b.dataset.v === val) b.setAttribute("aria-pressed", "true"); });
+      };
+      div.querySelectorAll(".yn button").forEach(b => b.addEventListener("click", () => {
+        state.pq[state.s] = Object.assign({}, state.pq[state.s], { [k]: b.dataset.v });
+        showResult(b.dataset.v);
+        afterPQ();
+        save();
+      }));
+      if (a) showResult(a);
+      box.appendChild(div);
+    });
+    afterPQ();
+    draw();
+  }
+
+  function afterPQ() {
+    const sc = SCENARIOS[state.s];
+    const ans = state.pq[state.s] || {};
+    const all = sc.points.every((p, k) => ans[k]);
+    const nb = $("nextBtn");
+    nb.hidden = !all;
+    if (all) {
+      state.done.add(state.s); save(); buildStrip();
+      nb.textContent = state.done.size === SCENARIOS.length ? "Finish" : "Next scenario";
+    }
+  }
+
+  // ---------- drawing ----------
+  function draw() {
+    const sc = SCENARIOS[state.s], vw = sc.view;
+    const ctx = canvas.getContext("2d");
+    const W = Math.max(240, Math.round(canvas.getBoundingClientRect().width));
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(W * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(W * dpr); }
+    const cs = getComputedStyle(document.documentElement);
+    const v = n => cs.getPropertyValue(n).trim();
+    const fs = Math.max(11, Math.round(W / 42));
+    const padL = fs * 4.4, padB = fs * 4, padT = fs * 1.2, padR = fs * 1.4;
+    const pw = W - padL - padR, ph = W - padT - padB;
+    const X = x => padL + x / vw.xmax * pw;
+    const Y = y => padT + ph - y / vw.ymax * ph;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = v("--surface"); ctx.fillRect(0, 0, W, W);
+
+    ctx.lineWidth = 1;
+    const minor = vw.step / 2;
+    for (let x = 0; x <= vw.xmax + 1e-9; x += minor) {
+      ctx.strokeStyle = Math.abs(x / vw.step - Math.round(x / vw.step)) < 1e-9 ? v("--grid-major") : v("--grid-minor");
+      ctx.beginPath(); ctx.moveTo(X(x) + .5, Y(vw.ymax)); ctx.lineTo(X(x) + .5, Y(0)); ctx.stroke();
+    }
+    for (let y = 0; y <= vw.ymax + 1e-9; y += minor) {
+      ctx.strokeStyle = Math.abs(y / vw.step - Math.round(y / vw.step)) < 1e-9 ? v("--grid-major") : v("--grid-minor");
+      ctx.beginPath(); ctx.moveTo(X(0), Y(y) + .5); ctx.lineTo(X(vw.xmax), Y(y) + .5); ctx.stroke();
+    }
+
+    const live = liveQs();
+    if (live.length) {
+      let region = [[0, 0], [vw.xmax, 0], [vw.xmax, vw.ymax], [0, vw.ymax]];
+      live.forEach(({ q }) => { region = clipPoly(region, q); });
+      if (region.length > 2) {
+        ctx.beginPath();
+        region.forEach((p, j) => j ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])));
+        ctx.closePath(); ctx.fillStyle = v("--region"); ctx.fill();
+      }
+    }
+
+    ctx.strokeStyle = v("--axis"); ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(vw.ymax)); ctx.lineTo(X(0), Y(0)); ctx.lineTo(X(vw.xmax), Y(0)); ctx.stroke();
+
+    ctx.fillStyle = v("--muted");
+    ctx.font = fs + 'px "Atkinson Hyperlegible", system-ui, sans-serif';
+    for (let x = 0; x <= vw.xmax + 1e-9; x += vw.step) { ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText(fmt(x), X(x), Y(0) + 5); }
+    for (let y = vw.step; y <= vw.ymax + 1e-9; y += vw.step) { ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(fmt(y), X(0) - 6, Y(y)); }
+    ctx.fillStyle = v("--ink");
+    ctx.font = "700 " + fs + 'px "Atkinson Hyperlegible", system-ui, sans-serif';
+    ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.fillText(sc.xAxis, padL + pw / 2, W - fs * .6);
+    ctx.save(); ctx.translate(fs * 1.3, padT + ph / 2); ctx.rotate(-Math.PI / 2);
+    ctx.textBaseline = "middle"; ctx.fillText(sc.yAxis, 0, 0); ctx.restore();
+
+    ctx.save();
+    ctx.beginPath(); ctx.rect(X(0), Y(vw.ymax), pw, ph); ctx.clip();
+    live.forEach(({ q, i }) => {
+      // two points far apart along the boundary line, in data units
+      const pts = [];
+      if (Math.abs(q.b) > 1e-12) { [-vw.xmax, 2 * vw.xmax].forEach(x => pts.push([x, -(q.a * x + q.c) / q.b])); }
+      else { [-vw.ymax, 2 * vw.ymax].forEach(y => pts.push([-q.c / q.a, y])); }
+      ctx.strokeStyle = v(ROW_VARS[i]); ctx.lineWidth = 3;
+      ctx.setLineDash(q.strict ? [11, 8] : []);
+      ctx.beginPath(); ctx.moveTo(X(pts[0][0]), Y(pts[0][1])); ctx.lineTo(X(pts[1][0]), Y(pts[1][1])); ctx.stroke();
+    });
+    ctx.restore(); ctx.setLineDash([]);
+
+    if (state.solved[state.s]) {
+      sc.points.forEach(p => {
+        const px = X(p.pt[0]), py = Y(p.pt[1]), r = Math.max(6, W / 70);
+        ctx.beginPath(); ctx.moveTo(px, py - r - 2); ctx.lineTo(px + r + 2, py); ctx.lineTo(px, py + r + 2); ctx.lineTo(px - r - 2, py); ctx.closePath();
+        ctx.fillStyle = v("--pt"); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = v("--surface"); ctx.stroke();
+        const txt = "(" + p.pt[0] + ", " + p.pt[1] + ")";
+        ctx.font = "700 " + fs + 'px "Atkinson Hyperlegible", system-ui, sans-serif';
+        ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        ctx.lineWidth = 3.5; ctx.lineJoin = "round"; ctx.strokeStyle = v("--surface");
+        ctx.strokeText(txt, px + r + 5, py - r); ctx.fillStyle = v("--ink"); ctx.fillText(txt, px + r + 5, py - r);
+      });
+    }
+    canvas.setAttribute("aria-label", "First-quadrant graph. Horizontal axis: " + sc.xAxis + ", 0 to " + vw.xmax +
+      ". Vertical axis: " + sc.yAxis + ", 0 to " + vw.ymax + ".");
+  }
+
+  function showApp() { $("app").hidden = false; $("finished").hidden = true; }
+  function showFinished() {
+    $("app").hidden = true; $("finished").hidden = false;
+    $("doneList").innerHTML = SCENARIOS.map(sc => "<li><b>" + sc.title + ":</b> " + sc.targets.map(t => t.show).join(" and ") + ", with x ≥ 0 and y ≥ 0</li>").join("");
+    buildStrip();
+    window.scrollTo({ top: 0 });
+  }
+
+  document.querySelectorAll(".symbols button").forEach(b => {
+    b.addEventListener("mousedown", e => e.preventDefault());
+    b.addEventListener("click", () => {
+      const r = rows[state.lastInput] || rows[0];
+      if (!r || r.input.disabled) return;
+      const el = r.input, s = el.selectionStart ?? el.value.length, e = el.selectionEnd ?? el.value.length;
+      el.value = el.value.slice(0, s) + b.dataset.sym + el.value.slice(e);
+      el.focus(); el.setSelectionRange(s + 1, s + 1);
+      r.touched = false; $("feedback").hidden = true; update();
+    });
+  });
+  $("checkBtn").addEventListener("click", check);
+  $("hintBtn").addEventListener("click", () => {
+    const h = $("hint"); h.hidden = !h.hidden; $("hintBtn").textContent = h.hidden ? "Show hint" : "Hide hint";
+  });
+  $("nextBtn").addEventListener("click", () => {
+    if (state.done.size === SCENARIOS.length && state.s === SCENARIOS.length - 1) { showFinished(); return; }
+    const nextUndone = SCENARIOS.findIndex((sc, i) => !state.done.has(i));
+    if (nextUndone === -1) { showFinished(); return; }
+    state.s = nextUndone; save(); render(); window.scrollTo({ top: 0 });
+  });
+  $("againBtn").addEventListener("click", () => {
+    state.s = 0; state.done = new Set(); state.answers = {}; state.solved = {}; state.pq = {};
+    save(); showApp(); render();
+  });
+
+  if (window.ResizeObserver) new ResizeObserver(draw).observe(canvas); else window.addEventListener("resize", draw);
+  if (window.matchMedia) { const mq = matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", draw); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
