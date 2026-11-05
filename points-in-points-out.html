@@ -426,17 +426,18 @@ function clipPoly(poly, q) {
 }
 </script>
 <script>
-/* ===== Teacher setup =====
-      const FIREBASE_CONFIG = {
-     apiKey: "AIza...",
-     authDomain: "your-project.firebaseapp.com",
-     databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-     projectId: "your-project",
-     storageBucket: "your-project.appspot.com",
-     messagingSenderId: "1234567890",
-     appId: "1:1234567890:web:abc123"
-   };
-const FIREBASE_CONFIG = null;
+// ===== TEACHER SETUP: put your Firebase values between the quotation marks =====
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDkuZVoCbhVotMLGi_iI8wGYCrRKie8ex8",
+  authDomain: "exponentproperties-7198b.firebaseapp.com",
+  databaseURL: "https://exponentproperties-7198b-default-rtdb.firebaseio.com",
+  projectId: "exponentproperties-7198b",
+  storageBucket: "exponentproperties-7198b.firebasestorage.app",
+  messagingSenderId: "189445254765",
+  appId: "1:189445254765:web:3e6f1c783f9b6fdfa85964"
+};
+// ===== END OF TEACHER SETUP =====
+
 
 (function () {
   const KEY = "sys-ineq-part1-v2";
@@ -457,7 +458,7 @@ const FIREBASE_CONFIG = null;
 
   let db = null;
   try {
-    if (FIREBASE_CONFIG && window.firebase) {
+    if (FIREBASE_CONFIG && window.firebase && !/PASTE/.test(JSON.stringify(FIREBASE_CONFIG))) {
       if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
       db = firebase.database();
     }
